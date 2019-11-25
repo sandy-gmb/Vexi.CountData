@@ -1,0 +1,818 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://www.tiama-inspection.com/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://www.tiama-inspection.com/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://www.tiama-inspection.com/">
+      <s:element name="Counts">
+        <s:complexType />
+      </s:element>
+      <s:element name="CountsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CountsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetAlarmsSinceLastQuery">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetAlarmsSinceLastQueryResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetAlarmsSinceLastQueryResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetAlarms">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetAlarmsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetAlarmsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="MountedMolds">
+        <s:complexType />
+      </s:element>
+      <s:element name="MountedMoldsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="MountedMoldsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Measures">
+        <s:complexType />
+      </s:element>
+      <s:element name="MeasuresResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="MeasuresResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CumulCounts">
+        <s:complexType />
+      </s:element>
+      <s:element name="CumulCountsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CumulCountsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ReadenMolds">
+        <s:complexType />
+      </s:element>
+      <s:element name="ReadenMoldsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ReadenMoldsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EjectedMolds">
+        <s:complexType />
+      </s:element>
+      <s:element name="EjectedMoldsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="EjectedMoldsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetMoldsInSampleTable">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetMoldsInSampleTableResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetMoldsInSampleTableResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ChangeMountedMolds">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="mountedMolds" nillable="true" type="tns:MountedMoldsXml" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="MountedMoldsXml">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" form="unqualified" name="Root" type="tns:ArrayOfMoule" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfMoule">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="mold" nillable="true" type="tns:Moule" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Moule">
+        <s:attribute name="nb" type="s:int" use="required" />
+      </s:complexType>
+      <s:element name="ChangeMountedMoldsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ChangeMountedMoldsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddEjectedMolds">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="AddEjectedMolds" nillable="true" type="tns:MoulesEjectesXml" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="MoulesEjectesXml">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" form="unqualified" name="Root" type="tns:ArrayOfRejetMouleVue" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfRejetMouleVue">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="mold" nillable="true" type="tns:RejetMouleVue" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="RejetMouleVue">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:RejetMoule">
+            <s:attribute name="reason" type="s:int" use="required" />
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="RejetMoule">
+        <s:attribute name="nb" type="s:int" use="required" />
+      </s:complexType>
+      <s:element name="AddEjectedMoldsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="AddEjectedMoldsResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EraseMoldsInSampleTable">
+        <s:complexType />
+      </s:element>
+      <s:element name="EraseMoldsInSampleTableResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="EraseMoldsInSampleTableResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ChangeMoldsInSampleTable">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="ChangeMoldsInSampleTable" nillable="true" type="tns:MoulesPrelevesXmlPourWS1_0_9" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="MoulesPrelevesXmlPourWS1_0_9">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="Root" type="tns:PrelevementWS_1_0_9" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="PrelevementWS_1_0_9">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" form="unqualified" name="mold" type="tns:Moule" />
+          <s:element minOccurs="0" maxOccurs="1" form="unqualified" name="criteria" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="ChangeMoldsInSampleTableResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ChangeMoldsInSampleTableResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetVersions">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetVersionsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetVersionsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ChangeSamples">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="ChangeMoldsInSampleTable" nillable="true" type="tns:MoulesPrelevesXml" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="MoulesPrelevesXml">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" form="unqualified" name="Root" type="tns:ArrayOfPrelevementUnitaire" />
+          <s:element minOccurs="0" maxOccurs="1" form="unqualified" name="criteria" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" form="unqualified" name="mode" type="tns:EResetMode" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfPrelevementUnitaire">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="sample" nillable="true" type="tns:PrelevementUnitaire" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="PrelevementUnitaire">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="mold" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="sensor" type="tns:CodeDetection" />
+          <s:element minOccurs="1" maxOccurs="1" name="number" type="s:int" />
+        </s:sequence>
+      </s:complexType>
+      <s:simpleType name="CodeDetection">
+        <s:restriction base="s:string">
+          <s:enumeration value="0" />
+          <s:enumeration value="0" />
+          <s:enumeration value="1" />
+          <s:enumeration value="2" />
+          <s:enumeration value="3" />
+          <s:enumeration value="4" />
+          <s:enumeration value="9" />
+          <s:enumeration value="10" />
+          <s:enumeration value="12" />
+          <s:enumeration value="16" />
+          <s:enumeration value="17" />
+          <s:enumeration value="16" />
+          <s:enumeration value="26" />
+          <s:enumeration value="27" />
+          <s:enumeration value="30" />
+          <s:enumeration value="32" />
+          <s:enumeration value="35" />
+          <s:enumeration value="37" />
+          <s:enumeration value="38" />
+          <s:enumeration value="39" />
+          <s:enumeration value="40" />
+          <s:enumeration value="41" />
+          <s:enumeration value="42" />
+          <s:enumeration value="43" />
+          <s:enumeration value="44" />
+          <s:enumeration value="46" />
+          <s:enumeration value="47" />
+          <s:enumeration value="49" />
+          <s:enumeration value="54" />
+          <s:enumeration value="55" />
+          <s:enumeration value="56" />
+          <s:enumeration value="58" />
+          <s:enumeration value="66" />
+          <s:enumeration value="80" />
+          <s:enumeration value="91" />
+          <s:enumeration value="92" />
+          <s:enumeration value="93" />
+          <s:enumeration value="94" />
+          <s:enumeration value="100" />
+          <s:enumeration value="101" />
+          <s:enumeration value="102" />
+          <s:enumeration value="103" />
+          <s:enumeration value="104" />
+          <s:enumeration value="105" />
+          <s:enumeration value="106" />
+          <s:enumeration value="107" />
+          <s:enumeration value="108" />
+          <s:enumeration value="46" />
+          <s:enumeration value="46" />
+          <s:enumeration value="46" />
+          <s:enumeration value="46" />
+        </s:restriction>
+      </s:simpleType>
+      <s:simpleType name="EResetMode">
+        <s:restriction base="s:string">
+          <s:enumeration value="Normal" />
+          <s:enumeration value="Normal" />
+          <s:enumeration value="OneShot" />
+        </s:restriction>
+      </s:simpleType>
+      <s:element name="ChangeSamplesResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ChangeSamplesResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="CountsSoapIn">
+    <wsdl:part name="parameters" element="tns:Counts" />
+  </wsdl:message>
+  <wsdl:message name="CountsSoapOut">
+    <wsdl:part name="parameters" element="tns:CountsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetAlarmsSinceLastQuerySoapIn">
+    <wsdl:part name="parameters" element="tns:GetAlarmsSinceLastQuery" />
+  </wsdl:message>
+  <wsdl:message name="GetAlarmsSinceLastQuerySoapOut">
+    <wsdl:part name="parameters" element="tns:GetAlarmsSinceLastQueryResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetAlarmsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetAlarms" />
+  </wsdl:message>
+  <wsdl:message name="GetAlarmsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetAlarmsResponse" />
+  </wsdl:message>
+  <wsdl:message name="MountedMoldsSoapIn">
+    <wsdl:part name="parameters" element="tns:MountedMolds" />
+  </wsdl:message>
+  <wsdl:message name="MountedMoldsSoapOut">
+    <wsdl:part name="parameters" element="tns:MountedMoldsResponse" />
+  </wsdl:message>
+  <wsdl:message name="MeasuresSoapIn">
+    <wsdl:part name="parameters" element="tns:Measures" />
+  </wsdl:message>
+  <wsdl:message name="MeasuresSoapOut">
+    <wsdl:part name="parameters" element="tns:MeasuresResponse" />
+  </wsdl:message>
+  <wsdl:message name="CumulCountsSoapIn">
+    <wsdl:part name="parameters" element="tns:CumulCounts" />
+  </wsdl:message>
+  <wsdl:message name="CumulCountsSoapOut">
+    <wsdl:part name="parameters" element="tns:CumulCountsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ReadenMoldsSoapIn">
+    <wsdl:part name="parameters" element="tns:ReadenMolds" />
+  </wsdl:message>
+  <wsdl:message name="ReadenMoldsSoapOut">
+    <wsdl:part name="parameters" element="tns:ReadenMoldsResponse" />
+  </wsdl:message>
+  <wsdl:message name="EjectedMoldsSoapIn">
+    <wsdl:part name="parameters" element="tns:EjectedMolds" />
+  </wsdl:message>
+  <wsdl:message name="EjectedMoldsSoapOut">
+    <wsdl:part name="parameters" element="tns:EjectedMoldsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetMoldsInSampleTableSoapIn">
+    <wsdl:part name="parameters" element="tns:GetMoldsInSampleTable" />
+  </wsdl:message>
+  <wsdl:message name="GetMoldsInSampleTableSoapOut">
+    <wsdl:part name="parameters" element="tns:GetMoldsInSampleTableResponse" />
+  </wsdl:message>
+  <wsdl:message name="ChangeMountedMoldsSoapIn">
+    <wsdl:part name="parameters" element="tns:ChangeMountedMolds" />
+  </wsdl:message>
+  <wsdl:message name="ChangeMountedMoldsSoapOut">
+    <wsdl:part name="parameters" element="tns:ChangeMountedMoldsResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddEjectedMoldsSoapIn">
+    <wsdl:part name="parameters" element="tns:AddEjectedMolds" />
+  </wsdl:message>
+  <wsdl:message name="AddEjectedMoldsSoapOut">
+    <wsdl:part name="parameters" element="tns:AddEjectedMoldsResponse" />
+  </wsdl:message>
+  <wsdl:message name="EraseMoldsInSampleTableSoapIn">
+    <wsdl:part name="parameters" element="tns:EraseMoldsInSampleTable" />
+  </wsdl:message>
+  <wsdl:message name="EraseMoldsInSampleTableSoapOut">
+    <wsdl:part name="parameters" element="tns:EraseMoldsInSampleTableResponse" />
+  </wsdl:message>
+  <wsdl:message name="ChangeMoldsInSampleTableSoapIn">
+    <wsdl:part name="parameters" element="tns:ChangeMoldsInSampleTable" />
+  </wsdl:message>
+  <wsdl:message name="ChangeMoldsInSampleTableSoapOut">
+    <wsdl:part name="parameters" element="tns:ChangeMoldsInSampleTableResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetVersionsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetVersions" />
+  </wsdl:message>
+  <wsdl:message name="GetVersionsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetVersionsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ChangeSamplesSoapIn">
+    <wsdl:part name="parameters" element="tns:ChangeSamples" />
+  </wsdl:message>
+  <wsdl:message name="ChangeSamplesSoapOut">
+    <wsdl:part name="parameters" element="tns:ChangeSamplesResponse" />
+  </wsdl:message>
+  <wsdl:portType name="ServiceTM11Soap">
+    <wsdl:operation name="Counts">
+      <wsdl:input message="tns:CountsSoapIn" />
+      <wsdl:output message="tns:CountsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetAlarmsSinceLastQuery">
+      <wsdl:input message="tns:GetAlarmsSinceLastQuerySoapIn" />
+      <wsdl:output message="tns:GetAlarmsSinceLastQuerySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetAlarms">
+      <wsdl:input message="tns:GetAlarmsSoapIn" />
+      <wsdl:output message="tns:GetAlarmsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="MountedMolds">
+      <wsdl:input message="tns:MountedMoldsSoapIn" />
+      <wsdl:output message="tns:MountedMoldsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Measures">
+      <wsdl:input message="tns:MeasuresSoapIn" />
+      <wsdl:output message="tns:MeasuresSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CumulCounts">
+      <wsdl:input message="tns:CumulCountsSoapIn" />
+      <wsdl:output message="tns:CumulCountsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ReadenMolds">
+      <wsdl:input message="tns:ReadenMoldsSoapIn" />
+      <wsdl:output message="tns:ReadenMoldsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="EjectedMolds">
+      <wsdl:input message="tns:EjectedMoldsSoapIn" />
+      <wsdl:output message="tns:EjectedMoldsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMoldsInSampleTable">
+      <wsdl:input message="tns:GetMoldsInSampleTableSoapIn" />
+      <wsdl:output message="tns:GetMoldsInSampleTableSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ChangeMountedMolds">
+      <wsdl:input message="tns:ChangeMountedMoldsSoapIn" />
+      <wsdl:output message="tns:ChangeMountedMoldsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddEjectedMolds">
+      <wsdl:input message="tns:AddEjectedMoldsSoapIn" />
+      <wsdl:output message="tns:AddEjectedMoldsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="EraseMoldsInSampleTable">
+      <wsdl:input message="tns:EraseMoldsInSampleTableSoapIn" />
+      <wsdl:output message="tns:EraseMoldsInSampleTableSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ChangeMoldsInSampleTable">
+      <wsdl:input message="tns:ChangeMoldsInSampleTableSoapIn" />
+      <wsdl:output message="tns:ChangeMoldsInSampleTableSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetVersions">
+      <wsdl:input message="tns:GetVersionsSoapIn" />
+      <wsdl:output message="tns:GetVersionsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ChangeSamples">
+      <wsdl:input message="tns:ChangeSamplesSoapIn" />
+      <wsdl:output message="tns:ChangeSamplesSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ServiceTM11Soap" type="tns:ServiceTM11Soap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Counts">
+      <soap:operation soapAction="http://www.tiama-inspection.com/Counts" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetAlarmsSinceLastQuery">
+      <soap:operation soapAction="http://www.tiama-inspection.com/GetAlarmsSinceLastQuery" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetAlarms">
+      <soap:operation soapAction="http://www.tiama-inspection.com/GetAlarms" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="MountedMolds">
+      <soap:operation soapAction="http://www.tiama-inspection.com/MountedMolds" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Measures">
+      <soap:operation soapAction="http://www.tiama-inspection.com/Measures" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CumulCounts">
+      <soap:operation soapAction="http://www.tiama-inspection.com/CumulCounts" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReadenMolds">
+      <soap:operation soapAction="http://www.tiama-inspection.com/ReadenMolds" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EjectedMolds">
+      <soap:operation soapAction="http://www.tiama-inspection.com/EjectedMolds" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMoldsInSampleTable">
+      <soap:operation soapAction="http://www.tiama-inspection.com/GetMoldsInSampleTable" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ChangeMountedMolds">
+      <soap:operation soapAction="http://www.tiama-inspection.com/ChangeMountedMolds" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddEjectedMolds">
+      <soap:operation soapAction="http://www.tiama-inspection.com/AddEjectedMolds" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EraseMoldsInSampleTable">
+      <soap:operation soapAction="http://www.tiama-inspection.com/EraseMoldsInSampleTable" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ChangeMoldsInSampleTable">
+      <soap:operation soapAction="http://www.tiama-inspection.com/ChangeMoldsInSampleTable" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetVersions">
+      <soap:operation soapAction="http://www.tiama-inspection.com/GetVersions" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ChangeSamples">
+      <soap:operation soapAction="http://www.tiama-inspection.com/ChangeSamples" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="ServiceTM11Soap12" type="tns:ServiceTM11Soap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Counts">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/Counts" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetAlarmsSinceLastQuery">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/GetAlarmsSinceLastQuery" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetAlarms">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/GetAlarms" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="MountedMolds">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/MountedMolds" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Measures">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/Measures" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CumulCounts">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/CumulCounts" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReadenMolds">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/ReadenMolds" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EjectedMolds">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/EjectedMolds" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMoldsInSampleTable">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/GetMoldsInSampleTable" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ChangeMountedMolds">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/ChangeMountedMolds" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddEjectedMolds">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/AddEjectedMolds" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EraseMoldsInSampleTable">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/EraseMoldsInSampleTable" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ChangeMoldsInSampleTable">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/ChangeMoldsInSampleTable" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetVersions">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/GetVersions" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ChangeSamples">
+      <soap12:operation soapAction="http://www.tiama-inspection.com/ChangeSamples" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ServiceTM11">
+    <wsdl:port name="ServiceTM11Soap" binding="tns:ServiceTM11Soap">
+      <soap:address location="http://127.0.0.1/wstm11/service.asmx" />
+    </wsdl:port>
+    <wsdl:port name="ServiceTM11Soap12" binding="tns:ServiceTM11Soap12">
+      <soap12:address location="http://127.0.0.1/wstm11/service.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
