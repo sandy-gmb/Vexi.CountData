@@ -24,68 +24,71 @@
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
     <Filter Include="Generated Files\Debug">
-      <UniqueIdentifier>{3f3a56e8-4e81-4d2b-acfb-4bfeec8ca255}</UniqueIdentifier>
+      <UniqueIdentifier>{a917f1ee-82c9-43bd-b9aa-fbddbaca99e9}</UniqueIdentifier>
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
     <Filter Include="Generated Files\Release">
-      <UniqueIdentifier>{3426ed40-e530-48fd-9fa7-663e7fdb9e7a}</UniqueIdentifier>
+      <UniqueIdentifier>{08cee90f-b9c0-41e5-9ef8-5eb8ef80769f}</UniqueIdentifier>
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="datacenter.cpp">
+    <ClCompile Include="dataview.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PaserData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SaveDataToDB.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_datacenter.cpp">
+    <ClCompile Include="GeneratedFiles\Debug\moc_dataview.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_datacenter.cpp">
+    <ClCompile Include="GeneratedFiles\Release\moc_dataview.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_SaveDataToDB.cpp">
+    <ClCompile Include="GeneratedFiles\Debug\moc_mainui.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_SaveDataToDB.cpp">
+    <ClCompile Include="GeneratedFiles\Release\moc_mainui.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GenerateRecord.cpp">
+    <ClCompile Include="mainui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_GenerateRecord.cpp">
+    <ClCompile Include="GeneratedFiles\Debug\moc_setting.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_GenerateRecord.cpp">
+    <ClCompile Include="GeneratedFiles\Release\moc_setting.cpp">
       <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="setting.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="datacenter_global.h">
+    <ClInclude Include="dataview_global.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PaserData.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="GeneratedFiles\ui_mainui.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="DBOperDef.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="GeneratedFiles\ui_setting.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="datacenter.h">
+    <CustomBuild Include="dataview.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="SaveDataToDB.h">
+    <CustomBuild Include="mainui.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="GenerateRecord.h">
+    <CustomBuild Include="mainui.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="setting.h">
       <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="setting.ui">
+      <Filter>Form Files</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

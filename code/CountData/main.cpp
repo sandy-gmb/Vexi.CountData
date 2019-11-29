@@ -1,16 +1,15 @@
 #include <QApplication>
 #include <iostream>
-#include "soap/soapH.h"
-#include "soap/ServiceTM11Soap.nsmap"
-#include <QFile>
-#include <QDebug>
-#include <QStringList>
-#include <fstream>
-#include <atlbase.h>
-#include <atlconv.h>
 
 #include "datacenter.h"
-#include <iostream>
+#include "dataview.h"
+#include "Core.hpp"
+
+#include "logger.h"
+
+#include <QObject>
+#include <QStringList>
+#include <QThreadPool>
 
 using namespace std;
 
@@ -36,7 +35,10 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
     QApplication::setLibraryPaths(QStringList(QString(QCoreApplication::applicationDirPath()+"/QtPlugins/")));
 
-    cout << "Program Starting..."<<endl;
+    ELOGGER->SetLogLevel(EasyLog::LOG_INFO); 
+    ELOGGER->SetPrint2StdOut(false);
+
+    ELOGI( "Program Starting...");
     //testParserXmlData();
 
     DataCenter parser;
@@ -47,50 +49,24 @@ int main(int argc, char *argv[])
         system("pause");
         return 1;
     }
+    Core core;
+    DataView view(&core);
 
-	//test w;
-	//w.show();
-	struct soap m_oSoap;
-	// WebService调用对象
-	class _ns1__Counts getMobileCodeObject;
-	// WebService返回对象
-	class _ns1__CountsResponse getMobileCodeResponseObject;
-	// SOAP初始化
-	soap_init(&m_oSoap);
-	// 调用函数的参数赋值
-    cout << "Program Init Complete"<<endl;
-    while (true)
-    {//每半个小时执行一次
-        // 发送WebService请求，并获得返回结果
-        int nResult = soap_call___ns1__Counts(&m_oSoap,NULL,NULL,&getMobileCodeObject,getMobileCodeResponseObject);
-        // 操作成功
-        if(SOAP_OK == nResult)
-        {
-            // 输出返回结果
-            char* strResult = getMobileCodeResponseObject.CountsResult->__any;
-            QString xmlstr = QString::fromLocal8Bit(strResult);
-            QString err;
-            if(!parser.PaserDataToDataBase(xmlstr, &err))
-            {
-                qDebug()<<"Parser Count Data To DataBase Error:"<<qPrintable(err);
-                Sleep(1000*10);
-                continue;
-            }
 
-        }else{
-            Sleep(1000);
-            continue;
-        }
+    QObject::connect(&core, SIGNAL(signal_PaserDataToDataBase(const QString& , QString*)), &parser, SLOT(PaserDataToDataBase(const QString& , QString*)), Qt::DirectConnection);
 
-        //Sleep(1000*60*30);
-        //Sleep(1000*60);
-        Sleep(1000*10);
-        //Sleep(1000);
-    }
+    QObject::connect(&view, SIGNAL(signal_GetLastestRecord(Record& , QString*)), &parser, SLOT(GetLastestRecord(Record& , QString*)));
+    QObject::connect(&view, SIGNAL(signal_GetTimeInterval()), &parser, SLOT(GetTimeInterval()));
+    QObject::connect(&view, SIGNAL(signal_SetTimeInterval(ETimeInterval)), &parser, SLOT(SetTimeInterval(ETimeInterval)));
+    QObject::connect(&view, SIGNAL(signal_GetAllDate(QList<QDate>&)), &parser, SLOT(GetAllDate(QList<QDate>&)));
+    QObject::connect(&view, SIGNAL(signal_GetRecordListByDay(QDate , QList<QTime>& , QList<QTime>&)), &parser, SLOT(GetRecordListByDay(QDate , QList<QTime>& , QList<QTime>&)));
+    QObject::connect(&view, SIGNAL(signal_GetRecordByTime(QDateTime , QDateTime , Record&)), &parser, SLOT(GetRecordByTime(QDateTime , QDateTime , Record&)));
+    QObject::connect(&view, SIGNAL(closed()), &core, SLOT(stop()), Qt::QueuedConnection);
+    QObject::connect(&view, SIGNAL(closed()), &parser, SLOT(Stop()));
+
+
+    core.start();
+	view.show();
 	
-	/// 关闭SOAP
-	soap_destroy(&m_oSoap);
-	soap_end(&m_oSoap);
-	soap_done(&m_oSoap);
 	return a.exec();
 }

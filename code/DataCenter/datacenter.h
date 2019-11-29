@@ -56,6 +56,7 @@
 
 #include <QString>
 #include <QDateTime>
+#include "DataDef.hpp"
 
 
 // 此类是从 DataCenter.dll 导出的
@@ -66,12 +67,16 @@
 
 #include "datacenter_global.h"
 
-class DATACENTER_EXPORT DataCenter
+#include <QObject>
+
+class DATACENTER_EXPORT DataCenter: public QObject
 {
+    Q_OBJECT
 public:
     DataCenter();
     ~DataCenter();
 
+public slots:
     /**
     * @brief  :  Init 初始化， 内部会检查数据库是否创建，如果没有创建则会创建数据库
     *
@@ -80,6 +85,8 @@ public:
     * @retval :
     */
     bool Init(QString* err = nullptr);
+
+    void Stop();
 
     /**
     * @brief  :  PaserDataToDataBase 将传入的XML格式的字符串解析后将数据保存到数据库中
@@ -90,6 +97,63 @@ public:
     * @retval :
     */
     bool PaserDataToDataBase(const QString& xmldata, QString* err = nullptr);
+
+    /**
+    * @brief  :  signal_GetDataByTime 获取最新一条记录
+    *
+    * @param  :  Record & data 返回数据
+    * @return :  bool 可能由于异常原因导致出错(如数据库文件无法打开等)
+    * @retval :
+    */
+    bool GetLastestRecord(Record& data, QString* err);
+
+    /**
+    * @brief  :  GetTimeInterval 获取时间间隔
+    *
+    * @return :  ETimeInterval
+    * @retval :
+    */
+    ETimeInterval GetTimeInterval();
+
+    /**
+    * @brief  :  SetTimeInterval
+    *
+    * @param  :  ETimeInterval timeinterval
+    * @return :  void
+    * @retval :
+    */
+    void SetTimeInterval(ETimeInterval timeinterval);
+
+    /**
+    * @brief  :  signal_GetAllDate 获取当前记录的日期列表
+    *
+    * @param  :  QList<QDate> & lst
+    * @return :  bool
+    * @retval :
+    */
+    bool GetAllDate(QList<QDate>& lst);
+
+    /**
+    * @brief  :  signal_GetRecordListByDay 获取指定日期的记录起始时间和结束时间列表
+    *
+    * @param  :  QDate date
+    * @param  :  QList<QTime> & stlst
+    * @param  :  QList<QTime> & etlst
+    * @return :  bool
+    * @retval :
+    */
+    bool GetRecordListByDay(QDate date, QList<QTime>& stlst, QList<QTime>& etlst);
+     
+    /**
+    * @brief  :  signal_GetDataByTime 按时间获取数据,相当于设置可设置数据来源,根据链接的不同来源的槽函数
+    *
+    * @param  :  QDateTime st   起始时间
+    * @param  :  QDateTime end  结束时间
+    * @param  :  Record & data 返回数据
+    * @return :  bool 可能由于异常原因导致出错(如数据库文件无法打开等)
+    * @retval :
+    */
+    bool GetRecordByTime(QDateTime st, QDateTime end, Record& data);
 
 private:
     class Impl;

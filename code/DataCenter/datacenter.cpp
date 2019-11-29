@@ -6,8 +6,7 @@
 #include "PaserData.h"
 #include "SaveDataToDB.h"
 
-#include <fstream>
-#include <iostream>
+#include <logger.h>
 
 using namespace std;
 
@@ -52,27 +51,14 @@ bool DataCenter::PaserDataToDataBase(const QString& xmldata, QString* err)
 
     if(m_pimpl->m_db.m_islogevery_data)
     {
-        fstream fs;
-        fs.open("./log.txt", ios::app);
-        if(fs.is_open())
-        {
-            fs<<xmldata.toLocal8Bit().constData()<<endl;
-            fs.close();
-        }
+        ELOGI(xmldata.toLocal8Bit().constData());
     }
 
     XmlData data;
     data.dt_start = m_pimpl->lastt;
     if(!XMLPaser::PaserInfo(xmldata, data, err)) 
     {//解析数据出错
-        fstream fs;
-        fs.open("./log.txt", ios::app);
-        if(fs.is_open())
-        {
-            fs<<xmldata.toLocal8Bit().constData()<<"  "<<err->toLocal8Bit().constData()<<endl;
-            fs.close();
-        }
-
+        ELOGE("%s  %s", xmldata.toLocal8Bit().constData(), err->toLocal8Bit().constData());
         return false;
     }
     m_pimpl->lastt = QDateTime::currentDateTime();
@@ -80,13 +66,42 @@ bool DataCenter::PaserDataToDataBase(const QString& xmldata, QString* err)
     bool res = m_pimpl->m_db.SaveData(data, err);
     if(!res)
     {
-        fstream fs;
-        fs.open("./log.txt", ios::app);
-        if(fs.is_open())
-        {
-            fs<<err->toLocal8Bit().constData()<<endl;
-            fs.close();
-        }
+        ELOGE(err->toLocal8Bit().constData());
     }
     return res;
+}
+
+bool DataCenter::GetLastestRecord( Record& data, QString* err )
+{
+    return m_pimpl->m_db.GetLastestRecord(data, err);
+}
+
+ETimeInterval DataCenter::GetTimeInterval()
+{
+    return m_pimpl->m_db.GetTimeInterval();
+}
+
+void DataCenter::SetTimeInterval( ETimeInterval timeinterval )
+{
+    return m_pimpl->m_db.SetTimeInterval(timeinterval);
+}
+
+bool DataCenter::GetAllDate( QList<QDate>& lst )
+{
+    return m_pimpl->m_db.GetAllDate(lst);
+}
+
+bool DataCenter::GetRecordListByDay( QDate date, QList<QTime>& stlst, QList<QTime>& etlst )
+{
+    return m_pimpl->m_db.GetRecordListByDay(date, stlst, etlst);
+}
+
+bool DataCenter::GetRecordByTime( QDateTime st, QDateTime end, Record& data )
+{
+    return m_pimpl->m_db.GetRecordByTime(st, end, data);
+}
+
+void DataCenter::Stop()
+{
+    m_pimpl->m_db.Stop();
 }
