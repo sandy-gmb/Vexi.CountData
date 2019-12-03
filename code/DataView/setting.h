@@ -63,7 +63,9 @@ signals:
     */
     void signal_SetTimeInterval(ETimeInterval timeinterval);
 
-
+public:
+    QMap<int, QString> m_moldwors;        //Ä£°åID´ÊÌõ
+    QMap<int, QString> m_sensorwors;      //È±ÏİID´ÊÌõ
 private:
     Ui::setting *ui;
 
@@ -73,6 +75,7 @@ private:
     QList<QTime> etlst;
 
     QWidget* mainui;
+
 };
 
 #endif // SETTING_H

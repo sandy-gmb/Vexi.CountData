@@ -25,6 +25,9 @@ public:
     * @retval :
     */
     bool signal_PaserDataToDataBase(const QString& xmldata, QString* err);
+
+    //获取 获取原始数据时间间隔 单位秒
+    int GetTimeOfObtainSrcData();
 public:
 
     class Impl;

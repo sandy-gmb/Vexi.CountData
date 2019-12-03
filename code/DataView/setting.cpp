@@ -32,7 +32,14 @@ void setting::on_dateEdit_dateChanged( QDate d )
             .arg( etlst[i].hour(), 2, 10, QChar('0')).arg(etlst[i].minute(), 2, 10, QChar('0')));
     }
     ui->listWidget->insertItems(0, l);
-    ui->listWidget->setCurrentRow(l.size());
+    if(l.size() != 0)
+    {
+        ui->listWidget->setCurrentRow(l.size()-1);
+    }
+    else{
+        ui->tb_record->setColumnCount(0);
+        ui->tb_record->setRowCount(0);
+    }
 }   
 
 void setting::on_listWidget_currentRowChanged( int row )
@@ -50,6 +57,8 @@ void setting::on_listWidget_currentRowChanged( int row )
     ui->tb_record->clear();
     if(r.inspected == 0)
     {
+        ui->tb_record->setRowCount(0);
+        ui->tb_record->setColumnCount(0);
         ui->ledt_starttime->setText("");
         ui->ledt_endtime->setText("");
     }
@@ -80,8 +89,13 @@ void setting::on_listWidget_currentRowChanged( int row )
         for(int i = 0; i < r.mold_rejects.size();i++)
         {
             QPair<int, int>& p = r.mold_rejects[i];
+            QString colheader = tr("%1").arg(p.first);
+            if(m_moldwors.contains(p.first))
+            {
+                colheader = m_moldwors[p.first];
+            }
             //添加列表头
-            ui->tb_record->setHorizontalHeaderItem(i+2, new QTableWidgetItem( tr("%1").arg(p.first)));
+            ui->tb_record->setHorizontalHeaderItem(i+2, new QTableWidgetItem( colheader));
             coln_idx.insert(p.first, i+2);
             //添加数据
             ui->tb_record->setItem(r.sensor_rejects.size()+2-2, i+2, new QTableWidgetItem(tr("%1%").arg(double(p.second/(r.rejects*1.0)*100), 0, 'f', 1)));
@@ -92,8 +106,13 @@ void setting::on_listWidget_currentRowChanged( int row )
         for(int i = 0; i < r.sensor_rejects.size();i++)
         {
             QPair<int, int>& p = r.sensor_rejects[i];
-            //添加列表头
-            ui->tb_record->setVerticalHeaderItem(i, new QTableWidgetItem( tr("%1").arg(p.first)));
+            QString rowheader = tr("%1").arg(p.first);
+            if(m_sensorwors.contains(p.first))
+            {
+                rowheader = m_sensorwors[p.first];
+            }
+            //添加行表头
+            ui->tb_record->setVerticalHeaderItem(i, new QTableWidgetItem( rowheader));
             roln_idx.insert(p.first, i);
             //添加数据
             ui->tb_record->setItem(i, 1, new QTableWidgetItem(tr("%1%").arg(double(p.second/(r.rejects*1.0)*100), 0, 'f', 1)));
@@ -120,8 +139,15 @@ void setting::on_btn_refresh_clicked()
         //设置最新日期为默认日期
         ui->dateEdit->setMinimumDate(datelst.first());
         ui->dateEdit->setMaximumDate(datelst.last());
-        ui->dateEdit->setDate(datelst.last());
         curDate = datelst.last();
+        ui->dateEdit->setDate(datelst.last());
+    }
+    else
+    {
+        curDate = QDate::currentDate();
+        ui->dateEdit->setMinimumDate(curDate);
+        ui->dateEdit->setMaximumDate(curDate);
+        ui->dateEdit->setDate(curDate);
     }
 }
 

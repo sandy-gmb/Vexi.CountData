@@ -25,10 +25,11 @@ class DATAVIEW_EXPORT DataView:public QObject
 {
     Q_OBJECT
 public:
-    DataView(QObject* parent = nullptr);
+    DataView(int lang, QObject* parent = nullptr);
     ~DataView();
 
 public slots:
+    void Init();
     void show();
 signals:
     /**
@@ -90,6 +91,10 @@ signals:
 
     void closed();
 
+    //获取词条翻译文件名
+    QString GetWordsTranslationFilePath();
+    //获取软件语言
+    int GetSoftwareLanguage();
 private:
     class Impl;
     

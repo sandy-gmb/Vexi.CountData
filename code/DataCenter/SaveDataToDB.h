@@ -134,9 +134,6 @@ public:
     bool strategy_mode;     //策略模式 true表示 白名单 false表示黑名单
     QList<int> sensorids;   //策略影响的缺陷ID列表
     QDateTime  lastmodify;  //策略文件的最后修改时间
-
-    ETimeInterval eti;      //时间间隔,用于在多长时间生成一条统计记录
-
     bool m_islogevery_data; //是否保存完整日志
 
     GenerateRecord* work;

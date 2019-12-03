@@ -260,6 +260,9 @@
        <property name="text">
         <string>Current Time Interval:30 Min</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
       </widget>
      </item>
     </layout>
@@ -272,7 +275,7 @@
         <string notr="true">color: rgb(255, 0, 0);</string>
        </property>
        <property name="text">
-        <string>错误显示</string>
+        <string>ShowErrors</string>
        </property>
       </widget>
      </item>

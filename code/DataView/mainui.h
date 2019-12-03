@@ -51,12 +51,16 @@ signals:
     void closed();
 public:
     setting* m_settingui;
+
+    QMap<int, QString> m_moldwors;        //ƒ£∞ÂID¥ Ãı
+    QMap<int, QString> m_sensorwors;      //»±œ›ID¥ Ãı
 private:
     Ui::MainUI *ui;
     QTimer* m_timer;
 
     Record record;
     bool updated;
+
 };
 
 #endif // MAINUI_H

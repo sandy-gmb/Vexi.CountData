@@ -37,6 +37,15 @@ DataCenter::~DataCenter()
 
 bool DataCenter::Init(QString* err)
 {
+    DataCenterConf conf;
+    GetDataCenterConf(conf);
+
+    m_pimpl->m_db.strategy_mode = conf.bStrategyMode;
+    m_pimpl->m_db.m_islogevery_data = conf.bIsLogEveryData;
+    m_pimpl->m_db.sensorids = conf.lSensorIDs;
+    m_pimpl->m_db.work->eti = (ETimeInterval)conf.iTimeInterval_GeneRecord;
+    m_pimpl->m_db.work->outdatedays = conf.iDaysDataOutDate;
+
     return m_pimpl->m_db.Init(err);
 }
 
@@ -83,6 +92,7 @@ ETimeInterval DataCenter::GetTimeInterval()
 
 void DataCenter::SetTimeInterval( ETimeInterval timeinterval )
 {
+    SetGenerateRecordTimeInterval((int)timeinterval);
     return m_pimpl->m_db.SetTimeInterval(timeinterval);
 }
 

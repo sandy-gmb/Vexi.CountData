@@ -66,6 +66,7 @@
 */
 
 #include "datacenter_global.h"
+#include "ConfigDef.hpp"
 
 #include <QObject>
 
@@ -75,6 +76,10 @@ class DATACENTER_EXPORT DataCenter: public QObject
 public:
     DataCenter();
     ~DataCenter();
+
+signals:
+    void GetDataCenterConf(DataCenterConf& cfg);
+    void SetGenerateRecordTimeInterval(int ti);
 
 public slots:
     /**

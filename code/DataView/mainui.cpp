@@ -48,6 +48,8 @@ void MainUI::updateUI()
     ui->tb_record->clear();
     if(r.inspected == 0)
     {
+        ui->tb_record->setRowCount(0);
+        ui->tb_record->setColumnCount(0);
         ui->l_error->setText(tr("No Lastest Data"));
         ui->ledt_date->setText("");
         ui->ledt_starttime->setText("");
@@ -82,8 +84,13 @@ void MainUI::updateUI()
         for(int i = 0; i < r.mold_rejects.size();i++)
         {
             QPair<int, int>& p = r.mold_rejects[i];
+            QString colheader = tr("%1").arg(p.first);
+            if(m_moldwors.contains(p.first))
+            {
+                colheader = m_moldwors[p.first];
+            }
             //添加列表头
-            ui->tb_record->setHorizontalHeaderItem(i+2, new QTableWidgetItem( tr("%1").arg(p.first)));
+            ui->tb_record->setHorizontalHeaderItem(i+2, new QTableWidgetItem( colheader));
             coln_idx.insert(p.first, i+2);
             //添加数据
             ui->tb_record->setItem(r.sensor_rejects.size()+2-2, i+2, new QTableWidgetItem(tr("%1%").arg(double(p.second/(r.rejects*1.0)*100), 0, 'f', 1)));
@@ -94,8 +101,13 @@ void MainUI::updateUI()
         for(int i = 0; i < r.sensor_rejects.size();i++)
         {
             QPair<int, int>& p = r.sensor_rejects[i];
-            //添加列表头
-            ui->tb_record->setVerticalHeaderItem(i, new QTableWidgetItem( tr("%1").arg(p.first)));
+            QString rowheader = tr("%1").arg(p.first);
+            if(m_sensorwors.contains(p.first))
+            {
+                rowheader = m_sensorwors[p.first];
+            }
+            //添加行表头
+            ui->tb_record->setVerticalHeaderItem(i, new QTableWidgetItem( rowheader));
             roln_idx.insert(p.first, i);
             //添加数据
             ui->tb_record->setItem(i, 1, new QTableWidgetItem(tr("%1%").arg(double(p.second/(r.rejects*1.0)*100), 0, 'f', 1)));

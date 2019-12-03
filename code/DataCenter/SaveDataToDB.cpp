@@ -36,16 +36,17 @@ bool SaveDataToDB::Init(QString* err)
 bool SaveDataToDB::Init( QString filelname, QString* err /*= nullptr*/ )
 {
     {
+        QDir d ;
+        if(!d.exists(db_path))
+        {
+            bool t = d.mkpath(db_path);
+        }
+        QString t;
         //初始化数据库
         QFile f(db_path+filelname);
-        if(!f.exists())
-        {//没有打开时会自动创建文件，因此打开时，需要执行创建语句保证所有数据表已创建
-            QDir d ;
-            if(!d.exists(db_path))
-            {
-                bool t = d.mkpath(db_path);
-            }
-            db.setDatabaseName(db_path+db_filename);
+        //if(!f.exists())
+        {//使用SQL语句检查 如果没有表则创建
+            db.setDatabaseName(db_path+filelname);
             if(!db.open())
             {
                 SAFE_SET(err, QString(QObject::tr("Open database file:%1 failure,the erro is %2").arg(filelname).arg(db.lastError().text()))) ;
@@ -53,23 +54,26 @@ bool SaveDataToDB::Init( QString filelname, QString* err /*= nullptr*/ )
             }
             //新建的文件 执行一遍数据表的创建语句
             QSqlQuery query(db);
-            bool res = true;
+            bool res = false;
             do{
                 res = query.exec(create_tb_Main_SQL);
                 if(!res)
                 {
                     break;
                 }
+                res = false;
                 res = query.exec(create_tb_Mold_SQL);
                 if(!res)
                 {
                     break;
                 }
+                res = false;
                 res = query.exec(create_tb_Sensor_SQL);
                 if(!res)
                 {
                     break;
                 }
+                res = false;
                 res = query.exec(create_tb_SensorAdd_SQL);
                 if(!res)
                 {
@@ -78,16 +82,10 @@ bool SaveDataToDB::Init( QString filelname, QString* err /*= nullptr*/ )
             } while (false);
             if(!res)
             {
-                SAFE_SET(err, QString(QObject::tr("Initial database file:%1 failure,the erro is %2").arg(filelname).arg(query.lastError().text()))) ;
+                t = QString(QObject::tr("Initial database file:%1 failure,the erro is %2").arg(filelname).arg(query.lastError().text())) ;
+                ELOGE(qPrintable(t));
+                SAFE_SET(err, t);
                 db.close();
-                return false;
-            }
-        }
-        else{//有则打开
-            db.setDatabaseName(db_path+filelname);
-            if(!db.open())
-            {
-                SAFE_SET(err, QString(QObject::tr("Open database file:%1 failure,the erro is %2").arg(filelname).arg(db.lastError().text()))) ;
                 return false;
             }
         }
@@ -100,7 +98,7 @@ bool SaveDataToDB::Init( QString filelname, QString* err /*= nullptr*/ )
 
 bool SaveDataToDB::SaveData(const XmlData& data, QString* err)
 {
-    ParserStrategyFile(true);
+    //ParserStrategyFile(true);
     {
         QMutexLocker lk(rtdb_mutex.data());
         bool res = true;
@@ -435,7 +433,6 @@ void SaveDataToDB::Stop()
 {
     work->runflg = false;
     thd->wait(1000);
-    thd->terminate();
     ELOGD("SaveDataToDB::Stop()");
 }
 
@@ -457,6 +454,7 @@ SaveDataToDB::SaveDataToDB( QObject* parent /*= nullptr*/ )
 SaveDataToDB::~SaveDataToDB()
 {
     Stop();
+    thd->terminate();
 }
 
 bool SaveDataToDB::GetRecordByTime( QDateTime st, QDateTime end, Record& data )
@@ -481,7 +479,7 @@ bool SaveDataToDB::GetRecordByTime( QDateTime st, QDateTime end, Record& data )
             QSqlQuery query(db);
             if(!query.exec(sql) )
             {
-                QString err =  QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text());
+                QString err =  QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(query.lastError().text());
                 ELOGE(err.toLocal8Bit().constData() ) ;
                 db.close();
                 return false;
@@ -504,7 +502,7 @@ bool SaveDataToDB::GetRecordByTime( QDateTime st, QDateTime end, Record& data )
                     QSqlQuery mquery(db);
                     if(!mquery.exec(sql))
                     {//查询失败
-                        QString err =  QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text());
+                        QString err =  QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(mquery.lastError().text());
                         ELOGE(err.toLocal8Bit().constData() ) ;
                         db.close();
                         return false;
@@ -525,7 +523,7 @@ bool SaveDataToDB::GetRecordByTime( QDateTime st, QDateTime end, Record& data )
                             QSqlQuery squery(db);
                             if(!squery.exec(sql))
                             {
-                                QString err =  QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text());
+                                QString err =  QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(squery.lastError().text());
                                 ELOGE(err.toLocal8Bit().constData() ) ;
                                 db.close();
                                 return false;
@@ -544,7 +542,7 @@ bool SaveDataToDB::GetRecordByTime( QDateTime st, QDateTime end, Record& data )
                                     QSqlQuery aquery(db);
                                     if(!aquery.exec(sql))
                                     {
-                                        QString err =  QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text());
+                                        QString err =  QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(aquery.lastError().text());
                                         ELOGE(err.toLocal8Bit().constData() ) ;
                                         db.close();
                                         return false;
@@ -598,7 +596,7 @@ bool SaveDataToDB::GetLastestRecord( Record& data, QString* err )
             QSqlQuery query(db);
             if(!query.exec(sql) )
             {
-                SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()))) ;
+                SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(query.lastError().text()))) ;
                 db.close();
                 return false;
             }
@@ -621,7 +619,7 @@ bool SaveDataToDB::GetLastestRecord( Record& data, QString* err )
                     QSqlQuery mquery(db);
                     if(!mquery.exec(sql))
                     {//查询失败
-                        SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()))) ;
+                        SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(mquery.lastError().text()))) ;
                         db.close();
                         return false;
                     }
@@ -642,7 +640,7 @@ bool SaveDataToDB::GetLastestRecord( Record& data, QString* err )
                             QSqlQuery squery(db);
                             if(!squery.exec(sql))
                             {
-                                SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()))) ;
+                                SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(squery.lastError().text()))) ;
                                 db.close();
                                 return false;
                             }
@@ -662,7 +660,7 @@ bool SaveDataToDB::GetLastestRecord( Record& data, QString* err )
                                     QSqlQuery aquery(db);
                                     if(!aquery.exec(sql))
                                     {
-                                        SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()))) ;
+                                        SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(aquery.lastError().text()))) ;
                                         db.close();
                                         return false;
                                     }
@@ -725,7 +723,7 @@ bool SaveDataToDB::GetAllDate( QList<QDate>& lst )
             QSqlQuery query(db);
             if(!query.exec(sql) )
             {
-                QString err = QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()) ;
+                QString err = QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(query.lastError().text()) ;
                 ELOGE(err.toLocal8Bit().constData());
 
                 db.close();
@@ -771,7 +769,7 @@ bool SaveDataToDB::GetRecordListByDay( QDate date, QList<QTime>& stlst, QList<QT
             QSqlQuery query(db);
             if(!query.exec(sql) )
             {
-                QString err = QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()) ;
+                QString err = QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(query.lastError().text()) ;
                 ELOGE(err.toLocal8Bit().constData());
 
                 db.close();

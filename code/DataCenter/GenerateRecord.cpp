@@ -44,7 +44,7 @@ bool GenerateRecord::GetLastestRecord(QDateTime& t, QString* err)
             QSqlQuery query(sql, db);
             if(!query.exec() || !query.next())
             {
-                SAFE_SET(err, QString(QObject::tr("Open database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()))) ;
+                SAFE_SET(err, QString(QObject::tr("Open database file:%1 failure,the erro is %2").arg(filename).arg(query.lastError().text()))) ;
                 db.close();
                 return false;
             }
@@ -77,7 +77,7 @@ bool GenerateRecord::GetLastestRecord(QDateTime& t, QString* err)
             QSqlQuery query(sql, db);
             if(!query.exec() || !query.next())
             {
-                SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()))) ;
+                SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(query.lastError().text()))) ;
                 db.close();
                 return false;
             }
@@ -88,9 +88,13 @@ bool GenerateRecord::GetLastestRecord(QDateTime& t, QString* err)
                     t = QDateTime::fromString(query.value(0).toString(), "yyyy-MM-dd hh:mm:ss");
                     //QString st = t.toString();
                     //ELOGD("GetLastT RT_T:%s", qPrintable(t.toString()));
-                    db.close();
-                    return true;
                 }
+                else
+                {
+                    t = QDateTime::currentDateTime();
+                }
+                db.close();
+                return true;
             }
         }
     }
@@ -121,7 +125,7 @@ bool GenerateRecord::QueryRecordByTime(QDateTime st, QDateTime et,QList<Record>&
             QSqlQuery query(db);
             if(!query.exec(sql) )
             {
-                SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()))) ;
+                SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(query.lastError().text()))) ;
                 db.close();
                 return false;
             }
@@ -144,7 +148,7 @@ bool GenerateRecord::QueryRecordByTime(QDateTime st, QDateTime et,QList<Record>&
                     QSqlQuery mquery(db);
                     if(!mquery.exec(sql))
                     {//查询失败
-                        SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()))) ;
+                        SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(mquery.lastError().text()))) ;
                         db.close();
                         return false;
                     }
@@ -168,7 +172,7 @@ bool GenerateRecord::QueryRecordByTime(QDateTime st, QDateTime et,QList<Record>&
                             QSqlQuery squery(db);
                             if(!squery.exec(sql))
                             {
-                                SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()))) ;
+                                SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(squery.lastError().text()))) ;
                                 db.close();
                                 return false;
                             }
@@ -191,7 +195,7 @@ bool GenerateRecord::QueryRecordByTime(QDateTime st, QDateTime et,QList<Record>&
                                     QSqlQuery aquery(db);
                                     if(!aquery.exec(sql))
                                     {
-                                        SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()))) ;
+                                        SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(aquery.lastError().text()))) ;
                                         db.close();
                                         return false;
                                     }
@@ -475,7 +479,7 @@ void GenerateRecord::DeleteOutdatedData(int outdatedays)
             QSqlQuery query(db);
             if(!query.exec(sql))
             {
-                ELOGD(QObject::tr("Delete database file:%1  data failure,the erro is %2").arg(filename).arg(db.lastError().text()).toLocal8Bit().constData());
+                ELOGD(QObject::tr("Delete database file:%1  data failure,the erro is %2").arg(filename).arg(query.lastError().text()).toLocal8Bit().constData());
             }
 
         }
@@ -536,7 +540,7 @@ void GenerateRecord::work()
             {
                 ELOGD(qPrintable(err));
             }
-            //ELOGD("GetLastT: %s", qPrintable(t.toString()));
+            ELOGD("GetLastT: %s", qPrintable(t.toString()));
 
             //2 根据截止时间 和时间间隔 计算需要生成记录的时间间隔
             QList<QDateTime> timelst;
@@ -577,7 +581,7 @@ void GenerateRecord::work()
         int cnt = 5000;
         while(cnt > 0)
         {
-            int single = 200;
+            int single = 50;
             //生成记录很耗时,并且实时性要求不高,因此可以设置为5 sec
             QEventLoop eventloop;
             QTimer::singleShot(single, &eventloop, SLOT(quit()));

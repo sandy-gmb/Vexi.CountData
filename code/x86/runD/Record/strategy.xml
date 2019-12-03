@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--mode: true for whitelist, the other for blacklist, the id in sensor is the id affected by mode-->
-<strategy>
-    <mode>true</mode>
-    <sensor>
-        <id>10</id>
-        <id>34</id>
-    </sensor>
-</strategy>
