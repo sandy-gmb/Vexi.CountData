@@ -39,6 +39,12 @@ Core::~Core()
 
 void Core::run()
 {
+    int t = 0;
+    t = GetTimeOfObtainSrcData();
+    if( t > 0)
+    {
+        timeinterval = t;
+    }
     // WebService调用对象
     class _ns1__Counts getMobileCodeObject;
     // WebService返回对象
