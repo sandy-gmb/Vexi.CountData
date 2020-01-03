@@ -43,4 +43,6 @@ target_wrapper.*
 CMakeLists.txt.user*
 /.vs
 /code/.vs/
-/build/
+/build/*
+*.usr
+*/Debug/*
