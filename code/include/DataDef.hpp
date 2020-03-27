@@ -7,19 +7,6 @@
 #include <QDateTime>
 #include <QMap>
 
-
-class SensorAddingInfo
-{
-public:
-    int counter_id;     //缺陷信息的counter id 
-    QString nb;         //缺陷信息Nb 由于Nb可能是整型和浮点型 所以先存成字符串，显示时再根据含义转换为整型或者浮点型
-    SensorAddingInfo()
-    {
-        counter_id = 0;
-        nb = "";
-    }
-};
-
 class SensorInfo
 {
 public:
@@ -27,7 +14,7 @@ public:
     int rejects;        //系统发出的剔废信号数
     int defects;        //系统收到的实际剔废数
 
-    QList<SensorAddingInfo> addinginfo; //缺陷附加信息
+	QMap<int, int> addinginfo;	//缺陷附加信息 count_id特征值索引 映射 Nb计数
 
     SensorInfo()
     {
@@ -40,7 +27,18 @@ public:
     {
         rejects += t.rejects;
         defects += t.defects;
-        //附加信息不用合并
+		foreach(int k, t.addinginfo.keys())
+		{
+			if(addinginfo.contains(k))
+			{
+				addinginfo[k] += t.addinginfo.value(k);
+			}
+			else
+			{
+				addinginfo.insert(k, t.addinginfo.value(k));
+			}
+
+		}
     }
 };
 

@@ -129,6 +129,17 @@ private:
     */
     bool Init(QString filelname, QString* err = nullptr);
 
+	bool QueryRecordByTime(QSharedPointer<QSqlDatabase> db, QDateTime st, QDateTime et,QList<Record>& lst, QString* err);
+	bool QueryMoldInfoByMainID(QSharedPointer<QSqlDatabase> db, int mainrowid, QList<MoldInfo>& moldinfo, QString* err);
+	bool QuerySensorInfoByMoldID(QSharedPointer<QSqlDatabase> db, int moldid, QList<SensorInfo>& sensorinfo, QString* err);
+	bool QuerySensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> db, int sensorid, QMap<int, int>& addinginfo, QString* err);
+
+	bool SaveRecord(QSharedPointer<QSqlDatabase> db,const Record& lst, QString* err, bool isoutdb = false);
+	bool SaveMoldInfoByMainID(QSharedPointer<QSqlDatabase> db, int mainrowid, const QList<MoldInfo>& moldinfo, QString* err);
+	bool SaveSensorInfoByMoldID(QSharedPointer<QSqlDatabase> db, int moldrowid, const QList<SensorInfo>& sensorinfo, QString* err);
+	bool SaveSensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> db, int sensorrowid, const QMap<int, int>& addinginfo, QString* err);
+	bool GetLastestRecordEndTime(QSharedPointer<QSqlDatabase> db, QDateTime& t, QString* err);
+
 public:
     //策略数据
     bool strategy_mode;     //策略模式 true表示 白名单 false表示黑名单
@@ -139,10 +150,12 @@ public:
     GenerateRecord* work;
     QThread* thd;            //线程对象 用于包裹GenerateRecord
 
-    QSqlDatabase db;        //使用一个对象,防止重复打开
-    QSharedPointer<QMutex>  rtdb_mutex;
-    QSharedPointer<QMutex>  db_mutex;
+	QSharedPointer<QSqlDatabase> db;        //连接自身数据库的对象,使用一个对象,防止重复打开
+	QSharedPointer<QSqlDatabase> rtdb;      //连接实时数据库的对象,使用一个对象,防止重复打开
+	QSharedPointer<QMutex>  rtdb_mutex;
+	QSharedPointer<QMutex>  db_mutex;
     
+	friend class GenerateRecord;
 };
 
 #endif//SAVEDATATODB_JQQ8207II27VSQ97_H_

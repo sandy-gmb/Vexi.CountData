@@ -41,9 +41,19 @@ void MainUI::updateUI()
     {
         return;
     }
-    SimpleRecord r;
-    r.SetRecord(record);
-    updated = false;
+
+	QDateTime t = QDateTime::currentDateTime();
+	SimpleRecord r;
+	if(record.dt_end < t)
+	{
+		updated =false;
+		return;
+	}
+	else
+	{
+		r.SetRecord(record);
+		updated = false;
+	}
 
     ui->tb_record->clear();
     if(r.inspected == 0)
@@ -127,9 +137,9 @@ void MainUI::updateUI()
 
 void MainUI::on_btn_settings_clicked()
 {
+	m_settingui->on_btn_refresh_clicked();
+	m_settingui->show();
     hide();
-    m_settingui->on_btn_refresh_clicked();
-    m_settingui->show();
 }
 
 void MainUI::UpdateTimeInterval( ETimeInterval ti )

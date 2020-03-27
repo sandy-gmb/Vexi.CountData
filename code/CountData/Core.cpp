@@ -8,6 +8,13 @@
 
 #define DefaultTimeInterval 60000 //1000*60
 
+#include <fstream>
+#include <QStringList>
+using namespace std;
+
+bool readfile = true;
+bool issavesrcdata = true;
+
 class Core::Impl
 {
 public:
@@ -39,37 +46,89 @@ Core::~Core()
 
 void Core::run()
 {
-    int t = 0;
-    t = GetTimeOfObtainSrcData();
+    int t = 2;
+    t = signal_GetTimeOfObtainSrcData();
     if( t > 0)
     {
         timeinterval = t;
-    }
-    // WebService调用对象
-    class _ns1__Counts getMobileCodeObject;
-    // WebService返回对象
-    class _ns1__CountsResponse getMobileCodeResponseObject;
-    // SOAP初始化
-    soap_init(&pimpl->m_oSoap);
-    // 调用函数的参数赋值
-    ELOGI("Soap Init Complete");
+	}
+	
+	// WebService调用对象
+	class _ns1__Counts getMobileCodeObject;
+	// WebService返回对象
+	class _ns1__CountsResponse getMobileCodeResponseObject;
+
+	fstream ifs;
+	QStringList srcdata;
+	if(readfile)
+	{
+		ifs.open("srcdata.txt", ios::in );
+		if(ifs.is_open())
+		{
+			string t;
+			std::getline(ifs, t);
+			while(t != "")
+			{
+				srcdata.append(QString::fromStdString(t));
+				std::getline(ifs, t);
+			}
+			ifs.close();
+		}
+	}
+	if(srcdata.isEmpty())
+	{
+		// SOAP初始化
+		soap_init(&pimpl->m_oSoap);
+		// 调用函数的参数赋值
+		ELOGI("Soap Init Complete");
+	}
+    
     int nResult = -1;
+	int idx = 0;
     while (isrun)
     {//每半个小时执行一次
         int lastres = nResult;
-        // 发送WebService请求，并获得返回结果
-        nResult = soap_call___ns1__Counts(&pimpl->m_oSoap,NULL,NULL,&getMobileCodeObject,getMobileCodeResponseObject);
+		if(srcdata.isEmpty() || !readfile)
+		{
+			// 发送WebService请求，并获得返回结果
+			nResult = soap_call___ns1__Counts(&pimpl->m_oSoap,NULL,NULL,&getMobileCodeObject,getMobileCodeResponseObject);
+		}
+		else
+		{
+			nResult = SOAP_OK;
+		}
+
         // 操作成功
         if(SOAP_OK == nResult)
         {
-            // 输出返回结果
-            char* strResult = getMobileCodeResponseObject.CountsResult->__any;
-            QString xmlstr = QString::fromLocal8Bit(strResult);
+			QString xmlstr;
+			if(readfile && !srcdata.isEmpty())
+			{
+				xmlstr = srcdata[idx];
+				idx = (idx+1)%srcdata.size();
+			}
+			else
+			{ // 输出返回结果
+				char* strResult = getMobileCodeResponseObject.CountsResult->__any;
+				xmlstr = QString::fromLocal8Bit(strResult);
+				ELOGD("receive data:%s ", qPrintable(xmlstr));
+			}
+           
             QString err;
-            if(!signal_PaserDataToDataBase(xmlstr, &err))
-            {
-                ELOGD( "Parser Count Data To DataBase Error:%s ",qPrintable(err));
-            }
+			if(!readfile && issavesrcdata)
+			{
+				ifs.open("srcdata.txt", ios::out | ios::app);
+				if( ifs.is_open())
+				{
+					ifs<<xmlstr.toStdString()<<endl;
+					ifs.close();
+				}
+			}
+			
+			if(!signal_PaserDataToDataBase(xmlstr, &err))
+			{
+				ELOGD( "Parser Count Data To DataBase Error:%s ",qPrintable(err));
+			}
         }
         else
         {
@@ -81,7 +140,7 @@ void Core::run()
             }
         }
 
-        Sleep(timeinterval);
+        Sleep(timeinterval*1000);
     }
     ELOGD("Core Exit");
 }

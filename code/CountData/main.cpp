@@ -14,22 +14,66 @@
 
 #include <QTextCodec>
 
+
+#ifdef WIN32
+#include <io.h>		// windows
+#include <Windows.h>
+#pragma warning(disable:4091)
+#include <DbgHelp.h>
+#else
+#include <unistd.h>		// linux
+#endif
+#pragma comment(lib,"dbghelp.lib")    // dump
+
+
 using namespace std;
 
-void testParserXmlData()
+static LONG WINAPI pfnUnhandledExceptionFilter(PEXCEPTION_POINTERS pExceptionInfo)
 {
-    DataCenter parser;
-    QString err;
-    if(!parser.Init(&err))
-    {
-        cout<<err.toLocal8Bit().constData()<<endl;
-        return;
-    }
+	if (IsDebuggerPresent())
+	{
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
 
-    QString xmlstr = "<Root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"\"> <Machine Id=\"MX\"> <Inspected>1</Inspected> <Rejects>1</Rejects> <Defects>1</Defects> <Autoreject>0</Autoreject> <Mold id=\"0\"> <Inspected>1</Inspected> <Rejects>1</Rejects> <Defects>1</Defects> <Autoreject>0</Autoreject> <Sensor id=\"40\"> <Rejects>0</Rejects> <Defects>0</Defects> </Sensor> <Sensor id=\"41\"> <Rejects>1</Rejects> <Defects>1</Defects> <Counter id=\"1\" Nb=\"1\"/> </Sensor> <Sensor id=\"42\"> <Rejects>0</Rejects> <Defects>0</Defects> </Sensor> <Sensor id=\"46\"> <Rejects>1</Rejects> <Defects>1</Defects> <Counter id=\"1\" Nb=\"1\"/> <Counter id=\"2\" Nb=\"1\"/> </Sensor> </Mold> <Mold id=\"2\"> <Inspected>1</Inspected> <Rejects>1</Rejects> <Defects>1</Defects> <Autoreject>0</Autoreject> <Sensor id=\"40\"> <Rejects>0</Rejects> <Defects>0</Defects> </Sensor> <Sensor id=\"41\"> <Rejects>1</Rejects> <Defects>1</Defects> <Counter id=\"1\" Nb=\"1\"/> </Sensor> <Sensor id=\"42\"> <Rejects>0</Rejects> <Defects>0</Defects> </Sensor> <Sensor id=\"46\"> <Rejects>1</Rejects> <Defects>1</Defects> <Counter id=\"1\" Nb=\"1\"/> <Counter id=\"2\" Nb=\"1\"/> </Sensor> </Mold></Machine> </Root> ";
-    QString xmlstr1 = "<Root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"\"> <Machine Id=\"MX\"/> </Root> ";
-    parser.PaserDataToDataBase(xmlstr1, &err);
-} 
+	HMODULE hDbgHelp = LoadLibrary(L"dbghelp.dll");
+	if (NULL == hDbgHelp)
+	{
+		return EXCEPTION_CONTINUE_EXECUTION;
+	}
+
+	SYSTEMTIME stSysTime;
+	memset(&stSysTime, 0, sizeof(SYSTEMTIME));
+	GetLocalTime(&stSysTime);
+
+	char szFile[MAX_PATH] = { 0 };		//根据字符集，有时候可能为WCHAR
+	// 判断目录是否存在
+	if (ENOENT == _access_s(".\\dump", 0))
+	{
+		CreateDirectoryA(".\\dump", NULL);
+	}
+
+	sprintf_s(szFile, ".\\dump\\%0.4d-%0.2d-%0.2d-%0.2d-%0.2d-%0.2d-%0.3d.dmp", \
+		stSysTime.wYear, stSysTime.wMonth, stSysTime.wDay, stSysTime.wHour, \
+		stSysTime.wMinute, stSysTime.wSecond, stSysTime.wMilliseconds);
+
+	HANDLE hFile = CreateFileA(szFile, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, \
+		0, CREATE_ALWAYS, 0, 0);
+	if (INVALID_HANDLE_VALUE != hFile)
+	{
+		MINIDUMP_EXCEPTION_INFORMATION objExInfo;
+		objExInfo.ThreadId = ::GetCurrentThreadId();
+		objExInfo.ExceptionPointers = pExceptionInfo;
+		objExInfo.ClientPointers = NULL;
+
+		MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hFile, \
+			MiniDumpWithDataSegs, (pExceptionInfo ? &objExInfo : NULL), NULL, NULL);
+		CloseHandle(hFile);
+	}
+
+	FreeLibrary(hDbgHelp);
+
+	return EXCEPTION_EXECUTE_HANDLER;
+}
 
 
 using namespace std;
@@ -42,13 +86,14 @@ int main(int argc, char *argv[])
     QTextCodec::setCodecForCStrings(code);
 
     QApplication::setLibraryPaths(QStringList(QString(QCoreApplication::applicationDirPath()+"/QtPlugins/")));
-        //testParserXmlData();
+
     ELOGGER->SetLogLevel(EasyLog::LOG_INFO); 
     //ELOGGER->SetLogLevel(EasyLog::LOG_TRACE); 
     ELOGGER->SetPrint2StdOut(false);
 
     ELOGI( "Program Starting...");
 
+	SetUnhandledExceptionFilter(pfnUnhandledExceptionFilter);
     QString err;
 
     Config cfg;
@@ -59,7 +104,7 @@ int main(int argc, char *argv[])
 
      QObject::connect(&da, SIGNAL(GetDataCenterConf(DataCenterConf&)), &cfg, SLOT(GetDataCenterConf(DataCenterConf&)));
      QObject::connect(&da, SIGNAL(SetGenerateRecordTimeInterval(int)), &cfg, SLOT(SetGenerateRecordTimeInterval(int)));
-     QObject::connect(&core, SIGNAL(GetTimeOfObtainSrcData()), &cfg, SLOT(GetTimeOfObtainSrcData()));
+     QObject::connect(&core, SIGNAL(signal_GetTimeOfObtainSrcData()), &cfg, SLOT(GetTimeOfObtainSrcData()), Qt::DirectConnection);
      QObject::connect(&view, SIGNAL(GetWordsTranslationFilePath()), &cfg, SLOT(GetWordsTranslationFilePath()));
 
     QObject::connect(&core, SIGNAL(signal_PaserDataToDataBase(const QString& , QString*)), &da, SLOT(PaserDataToDataBase(const QString& , QString*)), Qt::DirectConnection);
@@ -74,14 +119,14 @@ int main(int argc, char *argv[])
 
     if(!da.Init(&err))
     {
-        cout<<err.toLocal8Bit().constData()<<endl;
+		ELOGE("%s", qPrintable(err));
         system("pause");
         return 1;
     }
 
     view.Init();
 
-    core.start();
+	core.start();
 	view.show();
 	
 	return a.exec();

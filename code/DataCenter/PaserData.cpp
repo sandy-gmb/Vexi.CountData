@@ -3,7 +3,7 @@
 #include <QMap>
 #include <QObject>
 #include <QDomElement>
-
+#include <logger.h>
 
 //定义特定节点和属性名
 const QString& Node_Root = QObject::tr("Root");
@@ -65,16 +65,23 @@ bool XMLPaser::PaserSensorInfo(QDomElement& sensor, SensorInfo& data,QString* er
         }
         else if(t.tagName() == Node_Counter)
         {
-            SensorAddingInfo adding;
-            adding.counter_id = t.attribute(Attr_Other_ID).toInt(&res);
+			int counter_id, nb;
+			counter_id = -1;
+			nb = 0;
+            counter_id = t.attribute(Attr_Other_ID).toInt(&res);
             if(!res)
             {
                 SAFE_SET(err, QObject::tr("Paser Root.Machine.Mold.Sensor Node Counter,Value Could't Convert To Int"));
                 return false;
             }
-            adding.nb = t.attribute(Attr_Nb,"");
+			nb = t.attribute(Attr_Nb,"").toInt(&res);
+			if(!res)
+			{
+				SAFE_SET(err, QObject::tr("Paser Root.Machine.Mold.Sensor Node Nb,Value Could't Convert To Int"));
+				return false;
+			}
 
-            data.addinginfo.push_back(adding);
+            data.addinginfo.insert(counter_id, nb);
         }
     }
     return true;
@@ -160,92 +167,104 @@ bool XMLPaser::PaserMoldInfo(QDomElement& mold, MoldInfo& data,QString* err)
 bool XMLPaser::PaserMachineInfo(QDomElement& root, XmlData& data,QString* err)
 {//默认只会存在一个节点
 
-    data.dt_end = QDateTime::currentDateTime();
+	try
+	{
+		data.dt_end = QDateTime::currentDateTime();
 
-    if(!root.hasChildNodes())
-    {//没有子节点数据
-        SAFE_SET(err, QObject::tr("Paser XML data,Root Node, No Child"));
-        return false;
-    }
-    QDomElement mach = root.firstChildElement(Node_Mach);
-    if(mach.isNull())
-    {//没有此节点
-        SAFE_SET(err, QObject::tr("Paser XML data,Root.Machine Node, No Machine Node"));
-        return false;
-    }
-    data.id = mach.attribute(Attr_Mach_ID);
-    if(!mach.hasChildNodes())
-    {
-        SAFE_SET(err, QObject::tr("Paser XML data,Root Node No Called Machine child Node"));
-        return true;
-    }
-    QDomNodeList mach_children = mach.childNodes();
-    QMap<QString, bool> chkflg;
-    chkflg.insert(Node_Inspected, false);
-    chkflg.insert(Node_Rejects, false);
-    chkflg.insert(Node_Defects, false);
-    chkflg.insert(Node_Autoreject, false);
-    chkflg.insert(Node_Mold, false);
-    for(int i = 0; i < mach_children.length();i++)
-    {
-        QDomElement t = mach_children.at(i).toElement();
-        bool res = false;
-        if (t.tagName() == Node_Inspected)
-        {
-            data.inspected = t.text().toInt(&res);
-            if(!res)
-            {
-                SAFE_SET(err, QObject::tr("Paser Root.Machine Node Inspected,Value Could't Convert To Int"));
-                return false;
-            }
-            chkflg.insert(Node_Inspected, true);
-        }
-        else if(t.tagName() == Node_Rejects)
-        {
-            data.rejects = t.text().toInt(&res);
-            if(!res)
-            {
-                SAFE_SET(err, QObject::tr("Paser Root.Machine Node Inspected,Value Could't Convert To Int"));
-                return false;
-            }
-            chkflg.insert(Node_Rejects, true);
-        }
-        else if(t.tagName() == Node_Defects)
-        {
-            data.defects = t.text().toInt(&res);
-            if(!res)
-            {
-                SAFE_SET(err, QObject::tr("Paser Root.Machine Node Defects,Value Could't Convert To Int"));
-                return false;
-            }
-            chkflg.insert(Node_Defects, true);
-        }
-        else if(t.tagName() == Node_Autoreject)
-        {
-            data.autorejects = t.text().toInt(&res);
-            if(!res)
-            {
-                SAFE_SET(err, QObject::tr("Paser Root.Machine Node Autoreject,Value Could't Convert To Int"));
-                return false;
-            }
-            chkflg.insert(Node_Autoreject, true);
-        }
-        else if(t.tagName() == Node_Mold)
-        {
-            MoldInfo info;
-            res = PaserMoldInfo(t, info, err);
-            if(!res)
-            {
-                return false;
-            }
-            data.moldinfo.push_back(info);
-            chkflg.insert(Node_Mold, true);
-        }
-    }
+		if(!root.hasChildNodes())
+		{//没有子节点数据
+			SAFE_SET(err, QObject::tr("Paser XML data,Root Node, No Child"));
+			return false;
+		}
+		QDomElement mach = root.firstChildElement(Node_Mach);
+		if(mach.isNull())
+		{//没有此节点
+			SAFE_SET(err, QObject::tr("Paser XML data,Root.Machine Node, No Machine Node"));
+			return false;
+		}
+		data.id = mach.attribute(Attr_Mach_ID);
+		if(!mach.hasChildNodes())
+		{
+			SAFE_SET(err, QObject::tr("Paser XML data,Root Node No Called Machine child Node"));
+			return true;
+		}
+		QDomNodeList mach_children = mach.childNodes();
+		QMap<QString, bool> chkflg;
+		chkflg.insert(Node_Inspected, false);
+		chkflg.insert(Node_Rejects, false);
+		chkflg.insert(Node_Defects, false);
+		chkflg.insert(Node_Autoreject, false);
+		chkflg.insert(Node_Mold, false);
+		for(int i = 0; i < mach_children.length();i++)
+		{
+			QDomElement t = mach_children.at(i).toElement();
+			bool res = false;
+			if (t.tagName() == Node_Inspected)
+			{
+				data.inspected = t.text().toInt(&res);
+				if(!res)
+				{
+					SAFE_SET(err, QObject::tr("Paser Root.Machine Node Inspected,Value Could't Convert To Int"));
+					return false;
+				}
+				chkflg.insert(Node_Inspected, true);
+			}
+			else if(t.tagName() == Node_Rejects)
+			{
+				data.rejects = t.text().toInt(&res);
+				if(!res)
+				{
+					SAFE_SET(err, QObject::tr("Paser Root.Machine Node Inspected,Value Could't Convert To Int"));
+					return false;
+				}
+				chkflg.insert(Node_Rejects, true);
+			}
+			else if(t.tagName() == Node_Defects)
+			{
+				data.defects = t.text().toInt(&res);
+				if(!res)
+				{
+					SAFE_SET(err, QObject::tr("Paser Root.Machine Node Defects,Value Could't Convert To Int"));
+					return false;
+				}
+				chkflg.insert(Node_Defects, true);
+			}
+			else if(t.tagName() == Node_Autoreject)
+			{
+				data.autorejects = t.text().toInt(&res);
+				if(!res)
+				{
+					SAFE_SET(err, QObject::tr("Paser Root.Machine Node Autoreject,Value Could't Convert To Int"));
+					return false;
+				}
+				chkflg.insert(Node_Autoreject, true);
+			}
+			else if(t.tagName() == Node_Mold)
+			{
+				MoldInfo info;
+				res = PaserMoldInfo(t, info, err);
+				if(!res)
+				{
+					return false;
+				}
+				data.moldinfo.push_back(info);
+				chkflg.insert(Node_Mold, true);
+			}
+		}
 
-    //检查必要节点或熟悉是否已经被解析
+		//检查必要节点或熟悉是否已经被解析
 
-    return true;
+		return true;
+	}catch(std::exception& e)
+	{
+		ELOGE("parse xml data exception:%s", e.what());
+	}
+	catch(...)
+	{
+	
+	}
+	return false;
+    
 }
 
 bool XMLPaser::PaserInfo(const QString& xmlstr, XmlData& data, QString* err)

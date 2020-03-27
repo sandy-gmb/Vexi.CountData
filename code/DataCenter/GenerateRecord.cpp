@@ -1,10 +1,12 @@
 #include "GenerateRecord.h"
+#include "SaveDataTodb.h"
 
 #include <QString>
 #include <QObject>
 
 #include <QSqlDatabase>
 #include <QSqlQuery>
+#include <QSqlRecord>
 #include <QSqlError>
 #include <QVariant>
 
@@ -22,206 +24,58 @@
 #include "DBOperDef.hpp"
 
 #include <QMutexLocker>
+#include <QDebug>
 
-bool GenerateRecord::GetLastestRecord(QDateTime& t, QString* err)
+bool GenerateRecord::GetLastestRecordEndTime(QDateTime& t, QString* err)
 {//需保证数据库文件已经存在,且结构正确
     /*************************************************************************
     * 获取起始的时间点
     * 1 从记录表格 获取最新记录的截止时间 
     * 2 如果没有记录,则获取原始记录的第一条数据的起始时间 
+	* 3 否则返回当前时间
     *************************************************************************/
-    QString filename = db_filename;
-    {   //1 从记录表格 获取最新记录的截止时间
-        QMutexLocker lk(db_mutex.data());
-        db.setDatabaseName(db_path+filename);
-        if(!db.open())
-        {
-            SAFE_SET(err, QString(QObject::tr("Open database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()))) ;
-            return false;
-        }
-        {//为了关闭连接时 没有query使用
-            QString sql = QString("SELECT max(TimeEnd) as result FROM %1 ;").arg(tb_Main);
-            QSqlQuery query(sql, db);
-            if(!query.exec() || !query.next())
-            {
-                SAFE_SET(err, QString(QObject::tr("Open database file:%1 failure,the erro is %2").arg(filename).arg(query.lastError().text()))) ;
-                db.close();
-                return false;
-            }
-            else
-            {//获取结果
-                if(!query.value(0).isNull())
-                {//没有数据,结果为NULL
-                    t = QDateTime::fromString(query.value(0).toString(), "yyyy-MM-dd hh:mm:ss");
-                    //ELOGD("GetLastT DT:%s", qPrintable(t.toString()));
-                    db.close();
-                    return true;
-                }
-            }
-        }
-        db.close();
-        //
-    }
-    {
-        QMutexLocker lk(rtdb_mutex.data());
-        filename = rtdb_filename;
-        //1 从记录表格 获取最新记录的截止时间
-        db.setDatabaseName(db_path+filename);
-        if(!db.open())
-        {
-            SAFE_SET(err, QString(QObject::tr("Open database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()))) ;
-            return false;
-        }
-        {//为了关闭连接时 没有query使用
-            QString sql = QString("SELECT min(TimeStart) as result FROM %1;").arg(tb_Main);
-            QSqlQuery query(sql, db);
-            if(!query.exec() || !query.next())
-            {
-                SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(query.lastError().text()))) ;
-                db.close();
-                return false;
-            }
-            else
-            {//获取结果
-                if(!query.value(0).isNull())
-                {//没有数据,结果为NULL
-                    t = QDateTime::fromString(query.value(0).toString(), "yyyy-MM-dd hh:mm:ss");
-                    //QString st = t.toString();
-                    //ELOGD("GetLastT RT_T:%s", qPrintable(t.toString()));
-                }
-                else
-                {
-                    t = QDateTime::currentDateTime();
-                }
-                db.close();
-                return true;
-            }
-        }
-    }
-    //不会到达的分支
-    ELOGE("%s can't access branch", __FUNCTION__);
-    return false;
-}
-
-bool GenerateRecord::QueryRecordByTime(QDateTime st, QDateTime et,QList<Record>& lst, QString* err)
-{
-    //从原始记录数据库获取大于等于指定时间的对应记录
-    QString  filename = rtdb_filename;
-    QMutexLocker lk(db_mutex.data());
-    {
-        QMutexLocker lk(rtdb_mutex.data());
-        db.setDatabaseName(db_path+filename);
-        if(!db.open())
-        {
-            SAFE_SET(err, QString(QObject::tr("Open database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()))) ;
-            return false;
-        }
-        {//为了关闭连接时 没有query使用
-            //查询主表
-            QString sql = QString("SELECT ID, MachineID, Inspected, Rejects, Defects, Autoreject, TimeStart, TimeEnd \
-                                  FROM %1 WHERE TimeStart >= '%2' and TimeStart < '%3';")
-                                  .arg(tb_Main).arg(st.toString("yyyy-MM-dd hh:mm:ss")).arg(et.toString("yyyy-MM-dd hh:mm:ss"));
-            //ELOGD(qPrintable(sql));
-            QSqlQuery query(db);
-            if(!query.exec(sql) )
-            {
-                SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(query.lastError().text()))) ;
-                db.close();
-                return false;
-            }
-            while(query.next())
-            {
-                Record re;
-                int mainrowid    = query.value(0).toInt();
-                re.id            = query.value(1).toString();
-                re.inspected     = query.value(2).toInt();
-                re.rejects       = query.value(3).toInt();
-                re.defects       = query.value(4).toInt();
-                re.autorejects   = query.value(5).toInt();
-                re.dt_start      = QDateTime::fromString(query.value(6).toString(), "yyyy-MM-dd hh:mm:ss"); 
-                re.dt_end        = QDateTime::fromString(query.value(7).toString(), "yyyy-MM-dd hh:mm:ss"); 
-                if(re.inspected > 0)
-                {//过检总数大于0才有其他信息
-                    sql = QString("SELECT ID, MoldID, Inspected, Rejects, Defects, Autoreject FROM %1 WHERE TMainRowID=%2;")
-                        .arg(tb_Mold).arg(mainrowid);
-                    //ELOGD(qPrintable(sql));
-                    QSqlQuery mquery(db);
-                    if(!mquery.exec(sql))
-                    {//查询失败
-                        SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(mquery.lastError().text()))) ;
-                        db.close();
-                        return false;
-                    }
-                    while(mquery.next())
-                    {
-                        MoldInfo mold;
-                        int moldrowid      = mquery.value(0).toInt();
-                        mold.id            = mquery.value(1).toInt();
-                        mold.inspected     = mquery.value(2).toInt();
-                        mold.rejects       = mquery.value(3).toInt();
-                        mold.defects       = mquery.value(4).toInt();
-                        mold.autorejects   = mquery.value(5).toInt();
-                        if(mold.inspected <= 0)
-                        {
-                            continue;
-                        }
-                        {//查询sensor信息
-                            sql = QString("SELECT ID, SensorID, Rejects, Defects FROM %1 WHERE TMoldRowID=%2")   
-                                .arg(tb_Sensor).arg(moldrowid);
-                            //ELOGD(qPrintable(sql));
-                            QSqlQuery squery(db);
-                            if(!squery.exec(sql))
-                            {
-                                SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(squery.lastError().text()))) ;
-                                db.close();
-                                return false;
-                            }
-                            while(squery.next())
-                            {
-                                SensorInfo sensor;
-                                int sensorrowid      = squery.value(0).toInt();
-                                sensor.id            = squery.value(1).toInt();
-                                sensor.rejects       = squery.value(2).toInt();
-                                sensor.defects       = squery.value(3).toInt();
-                                if(sensor.rejects <= 0)
-                                {
-                                    continue;
-                                }
-                                {//查询sensoradd信息
-                                    
-                                    sql = QString("SELECT ID, CounterID, Nb FROM %1 WHERE TSensorRowID=%2")   
-                                        .arg(tb_SensorAdd).arg(sensorrowid);
-                                    //ELOGD(qPrintable(sql));
-                                    QSqlQuery aquery(db);
-                                    if(!aquery.exec(sql))
-                                    {
-                                        SAFE_SET(err, QString(QObject::tr("Query database file:%1 failure,the erro is %2").arg(filename).arg(aquery.lastError().text()))) ;
-                                        db.close();
-                                        return false;
-                                    }
-                                    while(aquery.next())
-                                    {
-                                        SensorAddingInfo addi;
-                                        addi.counter_id    = aquery.value(0).toInt();
-                                        addi.nb            = aquery.value(1).toString();
-
-                                        sensor.addinginfo.push_back(addi);
-                                    }
-                                }
-                                
-                                mold.sensorinfo.push_back(sensor);
-                            }
-                        }
-                        re.moldinfo.push_back(mold);
-                    }
-                }
-                lst.push_back(re);
-            }
-        }
-        db.close();
-    }
-
-    return true;
+	try
+	{
+		static bool isfirstlogdir = false;
+		{   //1 从记录表格 获取最新记录的截止时间
+			QMutexLocker lk(db_mutex.data());
+			if(!isfirstlogdir)
+			{
+				ELOGD("current Dir:%s", QDir::current().path().toStdString().c_str());
+				isfirstlogdir = true;
+			}
+			if(m_pthis->GetLastestRecordEndTime(db, t, err))
+			{
+				return true;
+			}
+			//
+		}
+		{
+			QMutexLocker lk(rtdb_mutex.data());
+			//1 从记录表格 获取最新记录的截止时间
+			if(m_pthis->GetLastestRecordEndTime(db, t, err))
+			{
+				return true;
+			}
+			else
+			{
+				t = QDateTime::currentDateTime();
+				return true;
+			}
+		}
+		//不会到达的分支
+		ELOGE("%s can't access branch", __FUNCTION__);
+		return false;
+	}
+	catch (std::exception& e)
+	{
+		ELOGE("%s exception:%s", __FUNCTION__, e.what());
+	}
+	catch (...)
+	{
+	}
+	return false;
+	
 }
 
 /**
@@ -236,7 +90,7 @@ bool GenerateRecord::QueryRecordByTime(QDateTime st, QDateTime et,QList<Record>&
 void GenerateRecord::CalcGenerateRecordTime(QDateTime start, ETimeInterval eti, QList<QDateTime>& lst)
 {
     int ti = ETimeInterval2Min(eti);
-    QDateTime end = QDateTime::currentDateTime();
+    QDateTime end = QDateTime::currentDateTime().addSecs(ti*60);
     //计算第一个时间间隔的起始时间
     QDateTime t(start.date(), QTime(0,0));
     //从凌晨12点开始计算起始时间属于的区间,
@@ -246,7 +100,7 @@ void GenerateRecord::CalcGenerateRecordTime(QDateTime start, ETimeInterval eti, 
     QStringList tslst;
 
     while(st.secsTo(end) > ti*60 )
-    {//存在需要生成的记录区间
+    {//存在需要生成的记录区间 需要生成的记录区间需要包含当前的区间
         tslst.push_back(st.toString());
 
         lst.push_back(st);
@@ -257,7 +111,7 @@ void GenerateRecord::CalcGenerateRecordTime(QDateTime start, ETimeInterval eti, 
     {
         //最后一个是截止时间
         lst.push_back(st);
-    }
+	}
 }
 
 bool GenerateRecord::StatisticsRecord(QList<QDateTime>& tlst, QList<Record>& lst, QList<Record>& newlst, QString* err)
@@ -307,151 +161,41 @@ bool GenerateRecord::StatisticsRecord(QList<QDateTime>& tlst, QList<Record>& lst
 
 bool GenerateRecord::GenerateRecordToDB(QList<Record>& newlst, QString* err)
 {
-    QString filename = db_filename;
     {
         bool res = true;
         QMutexLocker lk(db_mutex.data());
 
         //打开数据库
-        db.setDatabaseName(db_path+filename);
-        if(!db.open())
+        if(!db->open())
         {
-            SAFE_SET(err, QString(QObject::tr("Open database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()))) ;
+			SAFE_SET(err, QString(QObject::tr("Open Record database failure,the erro is %1").arg(db->lastError().text()))) ;
             return false;
         }
-        if(!db.transaction())
+        if(!db->transaction())
         {//开启事务失败
-            SAFE_SET(err, QString(QObject::tr("Start Transaction Error ")+db.lastError().text())) ;
-            db.close();
+            SAFE_SET(err, QString(QObject::tr("Start Transaction Error ")+db->lastError().text())) ;
+            db->close();
             return false;
         }
 
         foreach(Record data, newlst)
         {//开启事务操作
-            //新建的文件 执行一遍数据表的创建语句
-            QSqlQuery query(db);
-
-            //根据策略决定保存的数据
-            QString sql = QString("INSERT INTO %1(MachineID, Inspected, Rejects, Defects, Autoreject, TimeStart, TimeEnd) \
-                                  Values('%2', %3, %4, %5, %6, '%7', '%8');").arg(tb_Main).arg(data.id).arg(data.inspected).arg(data.rejects).arg(data.defects)
-                                  .arg(data.autorejects).arg(data.dt_start.toString("yyyy-MM-dd hh:mm:ss")).arg(data.dt_end.toString("yyyy-MM-dd hh:mm:ss"));
-
-            //保存主表数据，并查询主表对应的ID值
-            if(!query.exec(sql))
-            {
-                SAFE_SET(err, QString(QObject::tr("Save Machine Data Error, the Error is ")+query.lastError().text())) ;
-                res = false;
-                break;
-            }
-            //查询主表对应的ID值，新增的ID值最大
-            if(!query.exec(QString("SELECT max(ID) as res from %1").arg(tb_Main)))
-            {
-                SAFE_SET(err, QString(QObject::tr("Query Main Data ID Error: ")+query.lastError().text())) ;
-                res = false;
-                break;
-            }
-            //不可能出现的情形 
-            if(!query.next() || query.isNull(0))
-            {
-                SAFE_SET(err, QString(QObject::tr("query in a exception, no main data")+query.lastError().text())) ;
-                res = false;
-                break;
-            }
-            int mainrowid = query.value(0).toInt();
-
-            foreach(MoldInfo mold, data.moldinfo)
-            {
-                //循环保存每个模板信息数据，并查询每个模板对应的ID值
-                sql = QString("INSERT INTO %1(TMainRowID, MoldID, Inspected, Rejects, Defects, Autoreject) \
-                              VALUES(%2, %3, %4, %5, %6, %7);").arg(tb_Mold).arg(mainrowid).arg(mold.id)
-                              .arg(mold.inspected).arg(mold.rejects).arg(mold.defects).arg(mold.autorejects);
-                if(!query.exec(sql))
-                {
-                    SAFE_SET(err, QString(QObject::tr("Save Mold Data Error, the Error is ")+query.lastError().text())) ;
-                    res = false;
-                    break;
-                }
-                //查询模板表对应的ID值，新增的ID值最大
-                if(!query.exec(QString("SELECT max(ID) as res from %1").arg(tb_Mold)))
-                {
-                    SAFE_SET(err, QString(QObject::tr("Query Mold Data ID Error: ")+query.lastError().text())) ;
-                    res = false;
-                    break;
-                }
-                //不可能出现的情形 
-                if(!query.next() || query.isNull(0))
-                {
-                    SAFE_SET(err, QString(QObject::tr("query in a exception, no mold data")+query.lastError().text())) ;
-                    res = false;
-                    break;
-                }
-                int moldrowid = query.value(0).toInt();
-
-                foreach(SensorInfo sensor, mold.sensorinfo)
-                {
-                    //循环保存单个模板的所有缺陷信息数据，并记录每种缺陷数据的ID
-                    sql = QString("INSERT INTO %1(TMoldRowID, SensorID, Rejects, Defects) \
-                                  VALUES(%2, %3, %4, %5);").arg(tb_Sensor).arg(moldrowid).arg(sensor.id).arg(sensor.rejects)
-                                  .arg(sensor.defects);
-                    if (!query.exec(sql))
-                    {
-                        SAFE_SET(err, QString(QObject::tr("Save Sensor Data Error, the Error is ")+query.lastError().text())) ;
-                        res = false;
-                        break;
-                    }
-                    //查询模板表对应的ID值，新增的ID值最大
-                    if(!query.exec(QString("SELECT max(ID) as res from %1").arg(tb_Sensor)))
-                    {
-                        SAFE_SET(err, QString(QObject::tr("Query Sensor Data ID Error: ")+query.lastError().text())) ;
-                        res = false;
-                        break;
-                    }
-                    //不可能出现的情形 
-                    if(!query.next() || query.isNull(0))
-                    {
-                        SAFE_SET(err, QString(QObject::tr("query in a exception, no sensor data")+query.lastError().text())) ;
-                        res = false;
-                        break;
-                    }
-                    int sensorrowid = query.value(0).toInt();
-
-                    foreach(SensorAddingInfo adding, sensor.addinginfo)
-                    {
-                        //循环保存单个缺陷的附加信息数据
-                        sql = QString("INSERT INTO %1(TSensorRowID, CounterID, Nb) VALUES(%2,%3,%4);")
-                            .arg(tb_SensorAdd).arg(sensorrowid).arg(adding.counter_id).arg(adding.nb);
-                        if(!query.exec(sql))
-                        {
-                            SAFE_SET(err, QString(QObject::tr("Save SensorAdd Data Error, the Error is ")+query.lastError().text())) ;
-                            res = false;
-                            break;
-                        }
-                    }
-                    if(!res)
-                    {
-                        break;
-                    }
-                }
-                if(!res)
-                {
-                    break;
-                }
-            }
-            if(!res)
-            {
-                break;
-            }
+            if(!m_pthis->SaveRecord(db, data, err, true))
+			{
+				res = false;
+				break;
+			}
         } 
 
         if(!res)
         {
-            db.rollback();
+            db->rollback();
         }
         else
         {
-            db.commit();
+            db->commit();
         }
-        db.close();
+        db->close();
         return res;
     }
 
@@ -466,38 +210,74 @@ void GenerateRecord::DeleteOutdatedData(int outdatedays)
     //由于有外键 因此直接删除主表数据 即可删除相关数据
     {
         QMutexLocker lk(rtdb_mutex.data());
-        QString filename = rtdb_filename;
-        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", filename);
-        db.setDatabaseName(db_path+filename);
-        if(!db.open())
+        if(!rtdb->open())
         {
-            ELOGD(QObject::tr("Open database file:%1 failure,the erro is %2").arg(filename).arg(db.lastError().text()).toLocal8Bit().constData());
+            ELOGD(QObject::tr("Open RTRecord database failure,the erro is %1").arg(db->lastError().text()).toLocal8Bit().constData());
             return ;
         }
         {
             QString sql = QString("DELETE FROM %1 WHERE TimeEnd < '%2';").arg(tb_Main).arg(t);
-            QSqlQuery query(db);
+            QSqlQuery query(*rtdb);
             if(!query.exec(sql))
             {
-                ELOGD(QObject::tr("Delete database file:%1  data failure,the erro is %2").arg(filename).arg(query.lastError().text()).toLocal8Bit().constData());
+                ELOGD(QObject::tr("Delete RTRecord database data failure,the erro is %1").arg(query.lastError().text()).toLocal8Bit().constData());
             }
 
         }
-        db.close();
+        rtdb->close();
     }
 }
 
-GenerateRecord::GenerateRecord(QSharedPointer<QMutex> rt_mx,QSharedPointer<QMutex> mx, QObject *parent /*= nullptr*/ )
-    : QObject(parent)
+bool GenerateRecord::DeleteRecordAfterTime(QDateTime time)
+{
+	static bool isfirst = false;
+	//当前时间
+	QString t = time.toString("yyyy-MM-dd hh:mm:ss");
+	//QString et = time.addSecs(ETimeInterval2Min(eti)*60).toString("yyyy-MM-dd hh:mm:ss");
+	//由于有外键 因此直接删除主表数据 即可删除相关数据
+	{
+		QMutexLocker lk(db_mutex.data());
+		if(!db->open())
+		{
+			if(!isfirst)
+			{
+				ELOGD(QObject::tr("Open record database failure,the erro is %1").arg(db->lastError().text()).toLocal8Bit().constData());
+				isfirst = true;
+			}
+			return false;
+		}
+		{
+			QString sql = QString("DELETE FROM %1 WHERE  TimeEnd >= '%2';").arg(tb_Main).arg(t);
+			QSqlQuery query(*db);
+			if(!query.exec(sql))
+			{
+				if(!isfirst)
+				{
+					ELOGD(QObject::tr("Delete record database data failure,the erro is %1").arg(query.lastError().text()).toLocal8Bit().constData());
+					isfirst = true;
+				}
+			}
+
+		}
+		db->close();
+	}
+	return true;
+}
+GenerateRecord::GenerateRecord( QObject *parent /*= nullptr*/ )
+    : QObject(nullptr)
     , runflg(true)
 {
+	m_pthis = (SaveDataToDB*)parent;
+
+	db = m_pthis->db;
+	rtdb = m_pthis->rtdb;
+	db_mutex = m_pthis->db_mutex;
+	rtdb_mutex = m_pthis->rtdb_mutex;
+
     eti = ETI_30_Min;
     //默认30天过期
     outdatedays = 30;
 
-    db_mutex = mx;
-    rtdb_mutex = rt_mx;
-    db = QSqlDatabase::addDatabase("QSQLITE", "GenerateRecord");
 }
 
 void GenerateRecord::work()
@@ -535,19 +315,20 @@ void GenerateRecord::work()
             }
             QDateTime t;
             //1 检查记录数据库的主表,得到 最新的日志截止时间 QDateTime t,如果获取失败,则从原始记录表获取第一条记录的起始时间
-            res = GetLastestRecord(t, &err);
+            res = GetLastestRecordEndTime(t, &err);
             if(!res)
             {
                 ELOGD(qPrintable(err));
             }
-            ELOGD("GetLastT: %s", qPrintable(t.toString()));
 
             //2 根据截止时间 和时间间隔 计算需要生成记录的时间间隔
             QList<QDateTime> timelst;
+			//ELOGD("%s", t.toString().toStdString().c_str());
             CalcGenerateRecordTime(t, eti, timelst);
             if(timelst.isEmpty())
             {
-                break;
+				DeleteRecordAfterTime(QDateTime::currentDateTime());
+                continue;
             }
             if(!runflg){
                 break;
@@ -556,7 +337,10 @@ void GenerateRecord::work()
 
             //3 检查时间和时间间隔 查看是否有最新记录需要生成
             QList<Record> record_lst;
-            res = QueryRecordByTime(t, et, record_lst, &err);
+			{
+				QMutexLocker lk(rtdb_mutex.data());
+				res = m_pthis->QueryRecordByTime(rtdb, t, et, record_lst, &err);
+			}
             if(record_lst.isEmpty())
             {
                 break;
@@ -578,7 +362,7 @@ void GenerateRecord::work()
         } while (false);
 
        
-        int cnt = 5000;
+        int cnt = 2000;
         while(cnt > 0)
         {
             int single = 50;

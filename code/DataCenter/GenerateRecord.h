@@ -11,33 +11,36 @@
 #include <QMutex>
 #include <QSqlDatabase>
 
+class SaveDataToDB;
+
 class GenerateRecord: public QObject
 {
     Q_OBJECT
 public:
-    explicit GenerateRecord(QSharedPointer<QMutex> rt_mx,QSharedPointer<QMutex> mx, QObject *parent = nullptr) ;
+    explicit GenerateRecord( QObject *dboper = nullptr) ;
     virtual ~GenerateRecord();
     
 public slots:
-    void work();
+	void work();
+	bool DeleteRecordAfterTime(QDateTime time);
 
 private:
-
-    bool GetLastestRecord(QDateTime& t, QString* err);
-    bool QueryRecordByTime(QDateTime st, QDateTime et,QList<Record>& lst, QString* err);
+    bool GetLastestRecordEndTime(QDateTime& t, QString* err);
     void CalcGenerateRecordTime(QDateTime start, ETimeInterval eti, QList<QDateTime>& lst);
     bool StatisticsRecord(QList<QDateTime>& tlst, QList<Record>& lst, QList<Record>& newlst, QString* err);
     bool GenerateRecordToDB(QList<Record>& newlst, QString* err);
     void DeleteOutdatedData(int outdatedays);
-
 signals:
     void resultReady(const QString &result);
 public:
+	SaveDataToDB* m_pthis;
+
     bool runflg ;   //运行标志 用于控制线程退出
     ETimeInterval eti;
     int outdatedays;
-
-    QSqlDatabase            db;
+	
+	QSharedPointer<QSqlDatabase> db;        //连接自身数据库的对象,使用一个对象,防止重复打开
+	QSharedPointer<QSqlDatabase> rtdb;      //连接实时数据库的对象,使用一个对象,防止重复打开
     QSharedPointer<QMutex>  rtdb_mutex;
     QSharedPointer<QMutex>  db_mutex;
 };

@@ -140,7 +140,7 @@ void setting::on_btn_refresh_clicked()
         ui->dateEdit->setMinimumDate(datelst.first());
         ui->dateEdit->setMaximumDate(datelst.last());
         curDate = datelst.last();
-        ui->dateEdit->setDate(datelst.last());
+		on_dateEdit_dateChanged(datelst.last());
     }
     else
     {

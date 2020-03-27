@@ -8,11 +8,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Config", "Config\Config.vcxproj", "{BED51C5F-3FA3-4BE3-9A10-522FF47F8083}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CountData", "CountData\CountData.vcxproj", "{B12702AD-ABFB-343A-A199-8E24837244A3}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BED51C5F-3FA3-4BE3-9A10-522FF47F8083} = {BED51C5F-3FA3-4BE3-9A10-522FF47F8083}
-		{6F802466-CC06-4A5E-A6F9-095DEAF8AC6A} = {6F802466-CC06-4A5E-A6F9-095DEAF8AC6A}
-		{F80FA3B0-1092-4B8F-AE0B-28DC44DFF868} = {F80FA3B0-1092-4B8F-AE0B-28DC44DFF868}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +46,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
+		Qt5Version = 4.8.5_32_vs2010
 		QtVersion = $(DefaultQtVersion)
+		SolutionGuid = {C6594776-3910-43FB-816F-27939FE777A5}
 	EndGlobalSection
 EndGlobal
