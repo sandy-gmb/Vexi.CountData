@@ -87,7 +87,6 @@ int main(int argc, char *argv[])
 
     QApplication::setLibraryPaths(QStringList(QString(QCoreApplication::applicationDirPath()+"/QtPlugins/")));
 
-    ELOGGER->SetLogLevel(EasyLog::LOG_INFO); 
     //ELOGGER->SetLogLevel(EasyLog::LOG_TRACE); 
     ELOGGER->SetPrint2StdOut(false);
 
@@ -96,15 +95,18 @@ int main(int argc, char *argv[])
 	SetUnhandledExceptionFilter(pfnUnhandledExceptionFilter);
     QString err;
 
-    Config cfg;
+	Config cfg;
+	ELOGGER->SetLogLevel((EasyLog::LOG_LEVEL)cfg.GetConfigLogLevel());
+
     DataCenter da;
     Core core;
-    int lang = cfg.GetSoftwareLanguage();
+    
+	int lang = cfg.GetSoftwareLanguage();
     DataView view(lang);
 
      QObject::connect(&da, SIGNAL(GetDataCenterConf(DataCenterConf&)), &cfg, SLOT(GetDataCenterConf(DataCenterConf&)));
      QObject::connect(&da, SIGNAL(SetGenerateRecordTimeInterval(int)), &cfg, SLOT(SetGenerateRecordTimeInterval(int)));
-     QObject::connect(&core, SIGNAL(signal_GetTimeOfObtainSrcData()), &cfg, SLOT(GetTimeOfObtainSrcData()), Qt::DirectConnection);
+     QObject::connect(&core, SIGNAL(signal_GetCoreConf(CoreConf& )), &cfg, SLOT(GetCoreConf(CoreConf& )), Qt::DirectConnection);
      QObject::connect(&view, SIGNAL(GetWordsTranslationFilePath()), &cfg, SLOT(GetWordsTranslationFilePath()));
 
     QObject::connect(&core, SIGNAL(signal_PaserDataToDataBase(const QString& , QString*)), &da, SLOT(PaserDataToDataBase(const QString& , QString*)), Qt::DirectConnection);

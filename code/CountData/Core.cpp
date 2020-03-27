@@ -1,7 +1,7 @@
 #include "Core.hpp"
 #include "soap/soapH.h"
 #include "soap/ServiceTM11Soap.nsmap"
-#include <QDebug>
+#include "ConfigDef.hpp"
 
 #include "logger.h"
 #include <sstream>
@@ -11,9 +11,6 @@
 #include <fstream>
 #include <QStringList>
 using namespace std;
-
-bool readfile = true;
-bool issavesrcdata = true;
 
 class Core::Impl
 {
@@ -46,12 +43,14 @@ Core::~Core()
 
 void Core::run()
 {
-    int t = 2;
-    t = signal_GetTimeOfObtainSrcData();
-    if( t > 0)
+	CoreConf cfg;
+    signal_GetCoreConf(cfg);
+    if( cfg.iTimeInterval_GetSrcData > 0)
     {
-        timeinterval = t;
+        timeinterval = cfg.iTimeInterval_GetSrcData;
 	}
+	bool readfile = cfg.bReadSrcData;
+	bool issavesrcdata = cfg.bSaveSrcData;
 	
 	// WebService调用对象
 	class _ns1__Counts getMobileCodeObject;
@@ -148,5 +147,6 @@ void Core::run()
 void Core::stop()
 {
     isrun = false;
+	wait(1000);
 }
 

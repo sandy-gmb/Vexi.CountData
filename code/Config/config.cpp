@@ -32,7 +32,6 @@ public:
             lSensorIDs.push_back(id);
         }
         sets.endArray();
-        bIsLogEveryData = sets.value("strategy/islogall", false).toBool();
         //时间间隔等配置 system
         iTimeInterval_GeneRecord = sets.value("system/time_interval_generate_record", 0).toInt();
         iTimeInterval_GetSrcData = sets.value("system/time_interval_get_src_data", 60).toInt();
@@ -40,8 +39,10 @@ public:
 
         //系统语言及词条文件相关配置
         iLanguage = sets.value("system/language", 0).toInt();
-        sCodetsprefix = sets.value("system/code_file_prefix", "Words").toString();
-        
+		sCodetsprefix = sets.value("system/code_file_prefix", "Words").toString();
+		bReadSrcData = sets.value("system/isreadsrcdata", false).toBool();
+		bSaveSrcData = sets.value("system/issavesrcdata", false).toBool();
+		iLogLevel = sets.value("system/loglevel", 2).toInt();
     }
 
     void Save()
@@ -62,7 +63,6 @@ public:
             sets.setValue(QString::number(i), lSensorIDs[i]);
         }
         sets.endArray();
-        sets.setValue("strategy/islogall", bIsLogEveryData);
 
         //时间间隔等配置 system
         sets.setValue("system/time_interval_generate_record", iTimeInterval_GeneRecord);
@@ -71,7 +71,10 @@ public:
 
         //系统语言及词条文件相关配置
         sets.setValue("system/language", iLanguage);
-        sets.setValue("system/code_file_prefix", sCodetsprefix);
+		sets.setValue("system/code_file_prefix", sCodetsprefix);
+		sets.setValue("system/isreadsrcdata", bReadSrcData);
+		sets.setValue("system/issavesrcdata", bSaveSrcData);
+		sets.setValue("system/loglevel", iLogLevel);
         sets.sync();
     }
 
@@ -80,7 +83,9 @@ public:
     QList<int> lSensorIDs;               //策略影响的缺陷ID列表
     int iTimeInterval_GeneRecord;       //时间间隔,用于在多长时间生成一条统计记录 1:60分钟 2:90分钟;3:120分钟 其他:30分钟 具体使用由DataCenter决定
     int iDaysDataOutDate;               //原始数据有效天数 单位:天,超过此时间,数据库会删除
-    bool bIsLogEveryData;               //是否日志记录所有数据
+	bool bReadSrcData;					//是否读取源数据文件
+	bool bSaveSrcData;					//是否保存源数据到数据文件
+	int iLogLevel;						//日志级别
 
     int iTimeInterval_GetSrcData;       //获取原始数据的时间间隔 单位:秒
 
@@ -110,7 +115,6 @@ void Config::GetDataCenterConf( DataCenterConf& cfg )
     cfg.lSensorIDs = pimpl->lSensorIDs;
     cfg.iTimeInterval_GeneRecord = pimpl->iTimeInterval_GeneRecord;
     cfg.iDaysDataOutDate = pimpl->iDaysDataOutDate;
-    cfg.bIsLogEveryData = pimpl->bIsLogEveryData;
 }
 
 int Config::GetSoftwareLanguage()
@@ -145,4 +149,15 @@ void Config::SetGenerateRecordTimeInterval( int ti )
     pimpl->Save();
 }
 
+void Config::GetCoreConf(CoreConf& cfg)
+{
+	cfg.bReadSrcData = pimpl->bReadSrcData;
+	cfg.bSaveSrcData = pimpl->bSaveSrcData;
+	cfg.iTimeInterval_GetSrcData = pimpl->iTimeInterval_GetSrcData;
+}
+
+int Config::GetConfigLogLevel()
+{
+	return pimpl->iLogLevel;
+}
 

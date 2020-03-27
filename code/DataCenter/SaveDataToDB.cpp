@@ -25,8 +25,7 @@
 
 bool SaveDataToDB::Init(QString* err)
 {
-    m_islogevery_data = false;
-    bool res = Init(rtdb_filename, err) && Init(db_filename, err);
+    bool res = Init(rtdb, rtdb_filename, err) && Init(db, db_filename, err);
     if(res)
     {
         Start();
@@ -34,7 +33,7 @@ bool SaveDataToDB::Init(QString* err)
     return res;
 }
 
-bool SaveDataToDB::Init( QString filelname, QString* err /*= nullptr*/ )
+bool SaveDataToDB::Init(QSharedPointer<QSqlDatabase> _db, QString filelname, QString* err /*= nullptr*/ )
 {
 	try
 	{
@@ -46,15 +45,15 @@ bool SaveDataToDB::Init( QString filelname, QString* err /*= nullptr*/ )
 			}
 			QString t;
 			//初始化数据库
-			//if(!f.exists())
 			{//使用SQL语句检查 如果没有表则创建
-				if(!db->open())
+				_db->setDatabaseName(db_path+filelname);
+				if(!_db->open())
 				{
-					SAFE_SET(err, QString(QObject::tr("Open database failure,the erro is %1").arg(db->lastError().text()))) ;
+					SAFE_SET(err, QString(QObject::tr("Open database failure,the erro is %1").arg(_db->lastError().text()))) ;
 					return false;
 				}
 				//新建的文件 执行一遍数据表的创建语句
-				QSqlQuery query(*db);
+				QSqlQuery query(*_db);
 				bool res = false;
 				do{
 					res = query.exec(create_tb_Main_SQL);
@@ -86,11 +85,11 @@ bool SaveDataToDB::Init( QString filelname, QString* err /*= nullptr*/ )
 					t = QString(QObject::tr("Initial database failure,the erro is %1").arg(query.lastError().text())) ;
 					ELOGE(qPrintable(t));
 					SAFE_SET(err, t);
-					db->close();
+					_db->close();
 					return false;
 				}
 			}
-			db->close();
+			_db->close();
 		}
 
 		//QSqlDatabase::removeDatabase(filelname);
@@ -294,18 +293,16 @@ void SaveDataToDB::Start()
 
 void SaveDataToDB::Stop()
 {
+	ELOGD("SaveDataToDB::Stop()");
     work->runflg = false;
     thd->wait(1000);
-    ELOGD("SaveDataToDB::Stop()");
 }
 
 SaveDataToDB::SaveDataToDB( QObject* parent /*= nullptr*/ )
     : QObject(parent)
 {
 	db = QSharedPointer< QSqlDatabase> (new QSqlDatabase( QSqlDatabase::addDatabase("QSQLITE", "Record"))) ;
-	db->setDatabaseName(db_path+db_filename);
 	rtdb = QSharedPointer< QSqlDatabase> (new QSqlDatabase( QSqlDatabase::addDatabase("QSQLITE", "RTRecord"))) ;
-	rtdb->setDatabaseName(db_path+rtdb_filename);
 
     db_mutex = QSharedPointer<QMutex>(new QMutex(QMutex::Recursive));
     rtdb_mutex = QSharedPointer<QMutex>(new QMutex(QMutex::Recursive));
@@ -870,6 +867,35 @@ bool SaveDataToDB::GetLastestRecordEndTime(QSharedPointer<QSqlDatabase> _db, QDa
 	}
 	{//为了关闭连接时 没有query使用
 		QString sql = QString("SELECT max(TimeEnd) as result FROM %1 ;").arg(tb_Main);
+		QSqlQuery query(*_db);
+		if(!query.exec(sql) || !query.next())
+		{
+			SAFE_SET(err, QString(QObject::tr("Open database failure,the erro is %1").arg(query.lastError().text()))) ;
+			_db->close();
+			return false;
+		}
+		else
+		{//获取结果
+			if(!query.value(0).isNull())
+			{//有数据 且 不为Null
+				t = QDateTime::fromString(query.value(0).toString(), "yyyy-MM-dd hh:mm:ss");
+				_db->close();
+				return true;
+			}
+		}
+	}
+	_db->close();
+	return false;
+}
+bool SaveDataToDB::GetOldestRecordStartTime(QSharedPointer<QSqlDatabase> _db, QDateTime& t, QString* err)
+{
+	if(!_db->open())
+	{
+		SAFE_SET(err, QString(QObject::tr("Open Record database failure,the erro is %1").arg(_db->lastError().text()))) ;
+		return false;
+	}
+	{//为了关闭连接时 没有query使用
+		QString sql = QString("SELECT min(TimeStart) as result FROM %1 ;").arg(tb_Main);
 		QSqlQuery query(*_db);
 		if(!query.exec(sql) || !query.next())
 		{

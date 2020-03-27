@@ -127,7 +127,7 @@ private:
     * @return :  bool
     * @retval :
     */
-    bool Init(QString filelname, QString* err = nullptr);
+    bool Init(QSharedPointer<QSqlDatabase> _db, QString filelname, QString* err = nullptr);
 
 	bool QueryRecordByTime(QSharedPointer<QSqlDatabase> db, QDateTime st, QDateTime et,QList<Record>& lst, QString* err);
 	bool QueryMoldInfoByMainID(QSharedPointer<QSqlDatabase> db, int mainrowid, QList<MoldInfo>& moldinfo, QString* err);
@@ -139,7 +139,7 @@ private:
 	bool SaveSensorInfoByMoldID(QSharedPointer<QSqlDatabase> db, int moldrowid, const QList<SensorInfo>& sensorinfo, QString* err);
 	bool SaveSensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> db, int sensorrowid, const QMap<int, int>& addinginfo, QString* err);
 	bool GetLastestRecordEndTime(QSharedPointer<QSqlDatabase> db, QDateTime& t, QString* err);
-
+	bool GetOldestRecordStartTime(QSharedPointer<QSqlDatabase> db, QDateTime& t, QString* err);
 public:
     //策略数据
     bool strategy_mode;     //策略模式 true表示 白名单 false表示黑名单

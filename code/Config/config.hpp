@@ -41,7 +41,9 @@ public:
     QString GetWordsTranslationFilePath();
     //获取 获取原始数据时间间隔 单位秒
     int GetTimeOfObtainSrcData();
-
+	//获取core使用的配置
+	void GetCoreConf(CoreConf& cfg);
+	int GetConfigLogLevel();
 
 private:
     class Impl;

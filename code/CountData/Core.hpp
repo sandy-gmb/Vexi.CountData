@@ -2,6 +2,7 @@
 #define CORE_HH_
 
 #include <QThread>
+#include "ConfigDef.hpp"
 
 class Core : public QThread
 {
@@ -26,8 +27,8 @@ public:
     */
     bool signal_PaserDataToDataBase(const QString& xmldata, QString* err);
 
-    //获取 获取原始数据时间间隔 单位秒
-    int signal_GetTimeOfObtainSrcData();
+	 //获取 获取使用配置
+	void signal_GetCoreConf(CoreConf& cfg);
 public:
 
     class Impl;

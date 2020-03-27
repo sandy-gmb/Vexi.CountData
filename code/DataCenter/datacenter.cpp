@@ -41,7 +41,6 @@ bool DataCenter::Init(QString* err)
     GetDataCenterConf(conf);
 
     m_pimpl->m_db.strategy_mode = conf.bStrategyMode;
-    m_pimpl->m_db.m_islogevery_data = conf.bIsLogEveryData;
     m_pimpl->m_db.sensorids = conf.lSensorIDs;
     m_pimpl->m_db.work->eti = (ETimeInterval)conf.iTimeInterval_GeneRecord;
     m_pimpl->m_db.work->outdatedays = conf.iDaysDataOutDate;
@@ -57,12 +56,7 @@ bool DataCenter::PaserDataToDataBase(const QString& xmldata, QString* err)
         SAFE_SET(err, QObject::tr("No Input Data"));
         return false;
     }
-
-    if(m_pimpl->m_db.m_islogevery_data)
-    {
-        ELOGI(xmldata.toLocal8Bit().constData());
-    }
-
+	
     XmlData data;
     data.dt_start = m_pimpl->lastt;
     if(!XMLPaser::PaserInfo(xmldata, data, err)) 

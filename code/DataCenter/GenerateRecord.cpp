@@ -53,7 +53,7 @@ bool GenerateRecord::GetLastestRecordEndTime(QDateTime& t, QString* err)
 		{
 			QMutexLocker lk(rtdb_mutex.data());
 			//1 从记录表格 获取最新记录的截止时间
-			if(m_pthis->GetLastestRecordEndTime(db, t, err))
+			if(m_pthis->GetOldestRecordStartTime(rtdb, t, err))
 			{
 				return true;
 			}
@@ -323,7 +323,7 @@ void GenerateRecord::work()
 
             //2 根据截止时间 和时间间隔 计算需要生成记录的时间间隔
             QList<QDateTime> timelst;
-			//ELOGD("%s", t.toString().toStdString().c_str());
+			ELOGD("%s", t.toString("yyyy-MM-dd hh:mm:ss").toStdString().c_str());
             CalcGenerateRecordTime(t, eti, timelst);
             if(timelst.isEmpty())
             {
