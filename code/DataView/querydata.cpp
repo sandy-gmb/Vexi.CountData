@@ -1,87 +1,75 @@
-#include "mainui.h"
-#include "ui_mainui.h"
+#include "querydata.h"
+#include "ui_querydata.h"
 
-#include <QMap>
-#include <QPair>
-#include <QList>
-#include <QtAlgorithms>
-#include <QTimer>
-
-#include "setting.h"
 #include "UIDataDef.hpp"
+#include "mainui.h"
 
-MainUI::MainUI(QWidget *parent) :
+QueryWidget::QueryWidget(QWidget *main, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::MainUI)
+    ui(new Ui::query)
 {
+    mainui = main;
     ui->setupUi(this);
-	//初始化界面
-	ui->tb_record->setRowCount(0);
-	ui->tb_record->setColumnCount(0);
-	ui->l_error->setText(tr("No Latest Data"));
-	ui->ledt_date->setText("");
-	ui->ledt_starttime->setText("");
-	ui->ledt_endtime->setText("");
-    updated = false;
+
+    setWindowFlags(Qt::FramelessWindowHint);
+    
 }
 
-MainUI::~MainUI()
+QueryWidget::~QueryWidget()
 {
-    m_timer->stop();
-    
     delete ui;
 }
 
-void MainUI::GetData()
+void QueryWidget::on_dateEdit_dateChanged( QDate d )
 {
-    bool rt = false;
-    rt = signal_GetLastestRecord(0, record, nullptr);
-    if(rt )
+    curDate = d;
+    signal_GetRecordListByDay(d, stlst, etlst );
+    ui->listWidget->clear();
+    QStringList l;
+    for (int i = 0; i < stlst.size();i++)
     {
-       updated = true; 
+        l.append(QString("%1:%2_%3:%4").arg(stlst[i].hour(),2, 10, QChar('0')).arg(stlst[i].minute(),2, 10, QChar('0'))
+            .arg( etlst[i].hour(), 2, 10, QChar('0')).arg(etlst[i].minute(), 2, 10, QChar('0')));
     }
-}
-
-void MainUI::updateUI()
-{
-    if(!updated)
+    ui->listWidget->insertItems(0, l);
+    if(l.size() != 0)
     {
+        ui->listWidget->setCurrentRow(l.size()-1);
+    }
+    else{
+        ui->tb_record->setColumnCount(0);
+        ui->tb_record->setRowCount(0);
+    }
+}   
+
+void QueryWidget::on_listWidget_currentRowChanged( int row )
+{
+    if(row == -1)
         return;
-    }
+    QDateTime st(curDate, stlst[row]);
+    QDateTime et(curDate, etlst[row]);
+    Record record;
+    signal_GetRecordByTime(st, et, record);
 
-	QDateTime t = QDateTime::currentDateTime();
-	SimpleRecord r;
-	if(record.dt_end < t)
-	{
-		updated =false;
-		return;
-	}
-	else
-	{
-		r.SetRecord(record);
-		updated = false;
-	}
+    SimpleRecord r;
+    r.SetRecord(record);
 
     ui->tb_record->clear();
     if(r.inspected == 0)
     {
         ui->tb_record->setRowCount(0);
         ui->tb_record->setColumnCount(0);
-        ui->l_error->setText(tr("No Latest Data"));
-        ui->ledt_date->setText("");
         ui->ledt_starttime->setText("");
         ui->ledt_endtime->setText("");
     }
     else
     {
-        ui->l_error->setText("");
-        ui->ledt_date->setText(r.dt_start.date().toString("yyyy-MM-dd"));
         ui->ledt_starttime->setText(r.dt_start.time().toString("hh:mm:ss"));
         ui->ledt_endtime->setText(r.dt_end.time().toString("hh:mm:ss"));
         ui->ledt_total->setText(QString::number(r.inspected));
         ui->ledt_reject->setText(QString::number(r.rejects));
         ui->ledt_rate->setText(QString("%1%").arg(r.rejects/(r.inspected*1.0)*100, 0,'f', 1));
-        
+
         //模板个数+合计+错误占比
         QMap<int, int> coln_idx, roln_idx; // 模板对应列号 缺陷对应行号
         ui->tb_record->setColumnCount(r.mold_rejects.size()+2);
@@ -138,42 +126,100 @@ void MainUI::updateUI()
             {
                 ui->tb_record->setItem( roln_idx[sid], coln_idx[mid], new QTableWidgetItem(QString::number(sensor_rej[sid])));
             }
-        }
+		}
 		ui->tb_record->horizontalHeader()->setResizeMode(QHeaderView::Stretch); 
     }
 }
 
-void MainUI::on_btn_settings_clicked()
+void QueryWidget::on_btn_refresh_clicked()
 {
-	m_settingui->on_btn_refresh_clicked();
-	m_settingui->show();
-    hide();
+    //获取有记录的日期列表,并保存
+    signal_GetAllDate(0, datelst);
+    if(!datelst.isEmpty())
+    {
+        //设置最新日期为默认日期
+        ui->dateEdit->setMinimumDate(datelst.first());
+        ui->dateEdit->setMaximumDate(datelst.last());
+        curDate = datelst.last();
+		on_dateEdit_dateChanged(datelst.last());
+    }
+    else
+    {
+        curDate = QDate::currentDate();
+        ui->dateEdit->setMinimumDate(curDate);
+        ui->dateEdit->setMaximumDate(curDate);
+        ui->dateEdit->setDate(curDate);
+    }
 }
 
-void MainUI::UpdateTimeInterval( ETimeInterval ti )
+void QueryWidget::on_rbtn_eti_60min_clicked()
 {
-    int eti = ETimeInterval2Min(ti);
-    ui->l_timeinterval->setText(tr("Current Time Interval:%1 Min").arg(eti));
+    signal_SetTimeInterval(ETI_60_Min);
+    if(mainui!= nullptr)
+    {
+        ((MainUI*)mainui)->UpdateTimeInterval(ETI_60_Min);
+    }
 }
 
-void MainUI::Init()
+void QueryWidget::on_rbtn_eti_30min_clicked()
 {
+    signal_SetTimeInterval(ETI_30_Min);
+    if(mainui!= nullptr)
+    {
+        ((MainUI*)mainui)->UpdateTimeInterval(ETI_30_Min);
+    }
+}
+
+void QueryWidget::on_rbtn_eti_90min_clicked()
+{
+    signal_SetTimeInterval(ETI_90_Min);
+    if(mainui!= nullptr)
+    {
+        ((MainUI*)mainui)->UpdateTimeInterval(ETI_90_Min);
+    }
+}
+
+void QueryWidget::on_rbtn_eti_120min_clicked()
+{
+    signal_SetTimeInterval(ETI_120_Min);
+    if(mainui!= nullptr)
+    {
+        ((MainUI*)mainui)->UpdateTimeInterval(ETI_120_Min);
+    }
+}
+
+//void QueryWidget::closeEvent( QCloseEvent *event )
+//{
+//    mainui->close();
+//    event->accept();
+//}
+
+void QueryWidget::Init()
+{
+    ui->listWidget->clear();
+    //根据时间间隔 设置界面显示的时间间隔
     ETimeInterval ti = signal_GetTimeInterval();
+    switch(ti)
+    {
+    case ETI_30_Min:
+        ui->rbtn_eti_30min->setChecked(true);
+        break;
+    case ETI_60_Min:
+        ui->rbtn_eti_60min->setChecked(true);
+        break;
+    case ETI_90_Min:
+        ui->rbtn_eti_90min->setChecked(true);
+        break;
+    case ETI_120_Min:
+        ui->rbtn_eti_120min->setChecked(true);
+        break;
+    }
 
-    UpdateTimeInterval(ti);
-    m_timer = new QTimer(this);
-
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(GetData()));
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(updateUI()));
-
-    m_timer->start(2000);
+    on_btn_refresh_clicked();
 }
 
-void MainUI::closeEvent( QCloseEvent *event )
+void QueryWidget::on_btn_goback_clicked()
 {
-    m_timer->stop();
-
-    emit closed();
-    m_settingui->close();
-    event->accept();
+    this->hide(); 
+    mainui->show();
 }

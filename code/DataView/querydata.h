@@ -12,16 +12,16 @@
 #include "DataDef.hpp"
     
 namespace Ui {
-class setting;
+class query;
 }
 
-class setting : public QWidget
+class QueryWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit setting(QWidget *main, QWidget *parent = 0);
-    ~setting();
+    explicit QueryWidget(QWidget *main, QWidget *parent = 0);
+    ~QueryWidget();
 
     void Init();
 
@@ -67,7 +67,7 @@ public:
     QMap<int, QString> m_moldwors;        //ƒ£∞ÂID¥ Ãı
     QMap<int, QString> m_sensorwors;      //»±œ›ID¥ Ãı
 private:
-    Ui::setting *ui;
+    Ui::query *ui;
 
     QList<QDate> datelst;
     QDate curDate;

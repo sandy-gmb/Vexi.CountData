@@ -11,7 +11,9 @@
 #include <QMutex>
 #include <QSqlDatabase>
 
-class SaveDataToDB;
+#include "DBOperDef.hpp"
+
+class DBOperation;
 
 class GenerateRecord: public QObject
 {
@@ -22,27 +24,24 @@ public:
     
 public slots:
 	void work();
-	bool DeleteRecordAfterTime(QDateTime time);
 
 private:
-    bool GetLastestRecordEndTime(QDateTime& t, QString* err);
+	bool processGenerTimeIntervalRecord();
+	bool processGenerateShiftRecord();
+
     void CalcGenerateRecordTime(QDateTime start, ETimeInterval eti, QList<QDateTime>& lst);
-    bool StatisticsRecord(QList<QDateTime>& tlst, QList<Record>& lst, QList<Record>& newlst, QString* err);
-    bool GenerateRecordToDB(QList<Record>& newlst, QString* err);
-    void DeleteOutdatedData(int outdatedays);
+    bool StatisticsRecord(QList<QDateTime>& tlst, QList<Record>& lst, QList<Record>& newlst, QString* err, bool isshiftrecord = false);
+
+	void CalcGenerateShiftRecordTime(QDateTime start, QList<QDateTime>& lst);
 signals:
     void resultReady(const QString &result);
 public:
-	SaveDataToDB* m_pthis;
+	DBOperation* m_pthis;
 
-    bool runflg ;   //运行标志 用于控制线程退出
-    ETimeInterval eti;
-    int outdatedays;
-	
-	QSharedPointer<QSqlDatabase> db;        //连接自身数据库的对象,使用一个对象,防止重复打开
-	QSharedPointer<QSqlDatabase> rtdb;      //连接实时数据库的对象,使用一个对象,防止重复打开
-    QSharedPointer<QMutex>  rtdb_mutex;
-    QSharedPointer<QMutex>  db_mutex;
+    bool runflg ;				//运行标志 用于控制线程退出
+    ETimeInterval eti;			//时间间隔 分
+    int outdatedays;			//实时数据过期时间
+	QSharedPointer<Shift> shift;//班次计算对象
 };
 #endif//GenerateRecord_JQQ8207II27VSQ97_H_
 

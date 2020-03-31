@@ -41,19 +41,10 @@
     <ClCompile Include="PaserData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SaveDataToDB.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_datacenter.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_datacenter.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_SaveDataToDB.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_SaveDataToDB.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="GenerateRecord.cpp">
@@ -63,6 +54,15 @@
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_GenerateRecord.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="DBOperation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_DBOperation.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_DBOperation.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
@@ -81,10 +81,10 @@
     <CustomBuild Include="datacenter.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="SaveDataToDB.h">
+    <CustomBuild Include="GenerateRecord.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="GenerateRecord.h">
+    <CustomBuild Include="DBOperation.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

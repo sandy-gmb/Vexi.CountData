@@ -38,7 +38,7 @@ signals:
     * @return :  bool 可能由于异常原因导致出错(如数据库文件无法打开等)
     * @retval :
     */
-    bool signal_GetLastestRecord(Record& data, QString* err);
+    bool signal_GetLastestRecord(int type, Record& data, QString* err);
 
     /**
     * @brief  :  GetTimeInterval 获取时间间隔

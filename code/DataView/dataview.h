@@ -39,7 +39,7 @@ signals:
     * @return :  bool 可能由于异常原因导致出错(如数据库文件无法打开等)
     * @retval :
     */
-    bool signal_GetLastestRecord(Record& data, QString* err);
+    bool signal_GetLastestRecord(int type, Record& data, QString* err);
 
     /**
     * @brief  :  GetTimeInterval 获取时间间隔
@@ -65,7 +65,7 @@ signals:
     * @return :  bool
     * @retval :
     */
-    bool signal_GetAllDate(QList<QDate>& lst);
+    bool signal_GetAllDate(int type, QList<QDate>& lst);
 
     /**
     * @brief  :  signal_GetRecordListByDay 获取指定日期的记录起始时间和结束时间列表

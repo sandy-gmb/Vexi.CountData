@@ -41,10 +41,10 @@ DataView::DataView(int lang, QObject* parent)
     pimpl->m_settingui = new setting(pimpl->m_mainui);
     pimpl->m_mainui->m_settingui = pimpl->m_settingui;
 
-    connect(pimpl->m_mainui, SIGNAL(signal_GetLastestRecord(Record& , QString* )), this, SIGNAL(signal_GetLastestRecord(Record& , QString* )));
+    connect(pimpl->m_mainui, SIGNAL(signal_GetLastestRecord(int, Record& , QString* )), this, SIGNAL(signal_GetLastestRecord(int, Record& , QString* )));
     connect(pimpl->m_mainui, SIGNAL(signal_GetTimeInterval( )), this, SIGNAL(signal_GetTimeInterval( )));
     connect(pimpl->m_mainui, SIGNAL(closed( )), this, SIGNAL(closed( )));
-    connect(pimpl->m_settingui, SIGNAL(signal_GetAllDate(QList<QDate>& )), this, SIGNAL(signal_GetAllDate(QList<QDate>& )));
+    connect(pimpl->m_settingui, SIGNAL(signal_GetAllDate(int, QList<QDate>& )), this, SIGNAL(signal_GetAllDate(int, QList<QDate>& )));
     connect(pimpl->m_settingui, SIGNAL(signal_GetRecordListByDay(QDate , QList<QTime>& , QList<QTime>& )), this, SIGNAL(signal_GetRecordListByDay(QDate , QList<QTime>& , QList<QTime>& )));
     connect(pimpl->m_settingui, SIGNAL(signal_GetRecordByTime(QDateTime , QDateTime , Record& )), this, SIGNAL(signal_GetRecordByTime(QDateTime , QDateTime , Record& )));
     connect(pimpl->m_settingui, SIGNAL(signal_GetTimeInterval()), this, SIGNAL(signal_GetTimeInterval()));

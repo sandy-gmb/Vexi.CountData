@@ -110,7 +110,7 @@ public slots:
     * @return :  bool 可能由于异常原因导致出错(如数据库文件无法打开等)
     * @retval :
     */
-    bool GetLastestRecord(Record& data, QString* err);
+    bool GetLastestRecord(int type, Record& data, QString* err);
 
     /**
     * @brief  :  GetTimeInterval 获取时间间隔
@@ -136,7 +136,7 @@ public slots:
     * @return :  bool
     * @retval :
     */
-    bool GetAllDate(QList<QDate>& lst);
+    bool GetAllDate(int type, QList<QDate>& lst);
 
     /**
     * @brief  :  signal_GetRecordListByDay 获取指定日期的记录起始时间和结束时间列表
@@ -147,7 +147,7 @@ public slots:
     * @return :  bool
     * @retval :
     */
-    bool GetRecordListByDay(QDate date, QList<QTime>& stlst, QList<QTime>& etlst);
+    bool GetRecordListByDay(int type, QDate date, QList<QTime>& stlst, QList<QTime>& etlst);
      
     /**
     * @brief  :  signal_GetDataByTime 按时间获取数据,相当于设置可设置数据来源,根据链接的不同来源的槽函数
@@ -158,7 +158,7 @@ public slots:
     * @return :  bool 可能由于异常原因导致出错(如数据库文件无法打开等)
     * @retval :
     */
-    bool GetRecordByTime(QDateTime st, QDateTime end, Record& data);
+    bool GetRecordByTime(int type, QDateTime st, QDateTime end, Record& data);
 
 private:
     class Impl;

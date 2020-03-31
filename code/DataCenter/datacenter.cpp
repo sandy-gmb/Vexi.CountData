@@ -4,7 +4,7 @@
 //
 
 #include "PaserData.h"
-#include "SaveDataToDB.h"
+#include "DBOperation.h"
 
 #include <logger.h>
 
@@ -19,7 +19,7 @@ public:
     }
 
     QDateTime lastt;        //上一次的时间
-    SaveDataToDB m_db;
+    DBOperation m_db;
 };
 
 
@@ -74,9 +74,9 @@ bool DataCenter::PaserDataToDataBase(const QString& xmldata, QString* err)
     return res;
 }
 
-bool DataCenter::GetLastestRecord( Record& data, QString* err )
+bool DataCenter::GetLastestRecord(int type,  Record& data, QString* err )
 {
-    return m_pimpl->m_db.GetLastestRecord(data, err);
+    return m_pimpl->m_db.GetLastestRecord(type, data, err);
 }
 
 ETimeInterval DataCenter::GetTimeInterval()
@@ -90,19 +90,19 @@ void DataCenter::SetTimeInterval( ETimeInterval timeinterval )
     return m_pimpl->m_db.SetTimeInterval(timeinterval);
 }
 
-bool DataCenter::GetAllDate( QList<QDate>& lst )
+bool DataCenter::GetAllDate(int type,  QList<QDate>& lst )
 {
-    return m_pimpl->m_db.GetAllDate(lst);
+    return m_pimpl->m_db.GetAllDate(type, lst);
 }
 
-bool DataCenter::GetRecordListByDay( QDate date, QList<QTime>& stlst, QList<QTime>& etlst )
+bool DataCenter::GetRecordListByDay(int type,  QDate date, QList<QTime>& stlst, QList<QTime>& etlst )
 {
-    return m_pimpl->m_db.GetRecordListByDay(date, stlst, etlst);
+    return m_pimpl->m_db.GetRecordTimeListByDay(type, date, stlst, etlst);
 }
 
-bool DataCenter::GetRecordByTime( QDateTime st, QDateTime end, Record& data )
+bool DataCenter::GetRecordByTime(int type,  QDateTime st, QDateTime end, Record& data )
 {
-    return m_pimpl->m_db.GetRecordByTime(st, end, data);
+    return m_pimpl->m_db.GetRecordByTime(type, st, end, data);
 }
 
 void DataCenter::Stop()
