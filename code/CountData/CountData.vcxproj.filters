@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="soap\soapC.cpp" />
-    <ClCompile Include="soap\soapClient.cpp" />
-    <ClCompile Include="soap\stdsoap2.cpp" />
     <ClCompile Include="Core.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -14,14 +10,29 @@
     <ClCompile Include="GeneratedFiles\Release\moc_Core.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="soap\soapC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="soap\soapClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="soap\stdsoap2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="soap\soapH.h" />
-    <ClInclude Include="soap\soapStub.h" />
-    <ClInclude Include="soap\stdsoap2.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="soap\ServiceTM11Soap.nsmap" />
+    <ClInclude Include="soap\soapH.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="soap\stdsoap2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="soap\soapStub.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -54,5 +65,8 @@
     <CustomBuild Include="Core.hpp">
       <Filter>Header Files</Filter>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="soap\ServiceTM11Soap.nsmap" />
   </ItemGroup>
 </Project>

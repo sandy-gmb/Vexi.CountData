@@ -6,28 +6,28 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>602</width>
-    <height>198</height>
+    <width>623</width>
+    <height>242</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>settings</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_9">
+  <layout class="QHBoxLayout" name="horizontalLayout_11">
    <property name="spacing">
-    <number>2</number>
+    <number>1</number>
    </property>
    <property name="leftMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="topMargin">
-    <number>0</number>
+    <number>2</number>
    </property>
    <property name="rightMargin">
     <number>6</number>
    </property>
    <property name="bottomMargin">
-    <number>0</number>
+    <number>2</number>
    </property>
    <item>
     <widget class="QGroupBox" name="groupBox_3">
@@ -149,6 +149,9 @@
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_5">
+     <property name="spacing">
+      <number>1</number>
+     </property>
      <item>
       <widget class="QGroupBox" name="groupBox_4">
        <property name="font">
@@ -204,6 +207,9 @@
              <font>
               <pointsize>11</pointsize>
              </font>
+            </property>
+            <property name="currentIndex">
+             <number>1</number>
             </property>
             <item>
              <property name="text">
@@ -381,7 +387,7 @@
              </font>
             </property>
             <property name="text">
-             <string>data_outdate_days:</string>
+             <string>Data Outdate Days:</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -442,6 +448,96 @@
       </widget>
      </item>
      <item>
+      <widget class="QGroupBox" name="groupBox_6">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>50</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="title">
+        <string>Current Record Type</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_9">
+        <property name="spacing">
+         <number>2</number>
+        </property>
+        <property name="leftMargin">
+         <number>1</number>
+        </property>
+        <property name="topMargin">
+         <number>4</number>
+        </property>
+        <property name="rightMargin">
+         <number>1</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_10">
+          <item>
+           <widget class="QRadioButton" name="rbtn_show_timeinterval">
+            <property name="font">
+             <font>
+              <pointsize>11</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>every duration generate a record</string>
+            </property>
+            <property name="statusTip">
+             <string>every duration generate a record</string>
+            </property>
+            <property name="whatsThis">
+             <string>every duration generate a record</string>
+            </property>
+            <property name="text">
+             <string>by Time Interval</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rbtn_show_shift">
+            <property name="font">
+             <font>
+              <pointsize>11</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>every duration generate a record</string>
+            </property>
+            <property name="statusTip">
+             <string>every duration generate a record</string>
+            </property>
+            <property name="whatsThis">
+             <string>every duration generate a record</string>
+            </property>
+            <property name="text">
+             <string>by Shift</string>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer_2">
        <property name="font">
         <font>
@@ -471,7 +567,7 @@
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_6">
         <property name="spacing">
-         <number>2</number>
+         <number>0</number>
         </property>
         <property name="leftMargin">
          <number>1</number>
@@ -483,7 +579,7 @@
          <number>1</number>
         </property>
         <property name="bottomMargin">
-         <number>2</number>
+         <number>1</number>
         </property>
         <item>
          <widget class="QRadioButton" name="rbtn_eti_30min">
@@ -593,7 +689,7 @@
     <widget class="QGroupBox" name="groupBox_5">
      <property name="maximumSize">
       <size>
-       <width>90</width>
+       <width>95</width>
        <height>16777215</height>
       </size>
      </property>
@@ -641,6 +737,9 @@
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="spacing">
+         <number>2</number>
+        </property>
         <item>
          <widget class="QPushButton" name="btn_add_shifttime">
           <property name="font">
@@ -696,7 +795,7 @@
         </item>
         <item>
          <property name="text">
-          <string>08:00:00</string>
+          <string>07:00:00</string>
          </property>
         </item>
         <item>

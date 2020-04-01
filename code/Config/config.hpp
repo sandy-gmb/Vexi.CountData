@@ -29,21 +29,65 @@ public:
     Config(QObject* parent = nullptr);
     ~Config();
 
-    public slots:
+public slots:
     //获取相关配置的槽函数
-    //获取数据中心相关配置
-    void GetDataCenterConf(DataCenterConf& cfg);
-    void SetGenerateRecordTimeInterval(int ti);
 
-    //获取软件语言
-    int GetSoftwareLanguage();
-    //获取词条翻译文件路径
-    QString GetWordsTranslationFilePath();
-    //获取 获取原始数据时间间隔 单位秒
-    int GetTimeOfObtainSrcData();
-	//获取core使用的配置
+    //获取数据中心相关配置
+    /**
+    * @brief GetDataCenterConf 获取数据中心配置
+    *
+    * @param DataCenterConf & cfg
+    * @return:   void
+    */
+    void GetDataCenterConf(DataCenterConf& cfg);
+	/**
+	* @brief GetCoreConf
+	*
+	* @param CoreConf & cfg
+	* @return:   void
+	*/
 	void GetCoreConf(CoreConf& cfg);
+	/**
+	* @brief GetAllConfig
+	*
+	* @param AllConfig & cfg
+	* @return:   void
+	*/
+	void GetAllConfig(AllConfig& cfg);
+	void SetAllConfig(const AllConfig& cfg);
+
+	/**
+	* @brief GetConfigLogLevel
+	*
+	* @return:   int
+	*/
 	int GetConfigLogLevel();
+
+	//配置更新函数
+    //获取词条翻译文件路径
+    /**
+    * @brief GetWordsTranslation
+    *
+    * @param const QMap<int
+    * @param QString> & moldwors
+    * @param const QMap<int
+    * @param QString> & sensorwors
+    * @return:   void
+    */
+    void GetWordsTranslation(const QMap<int, QString>& moldwors, const QMap<int, QString>& sensorwors);
+	/**
+	* @brief GetTimeInterval
+	*
+	* @return:   int
+	*/
+	int GetTimeInterval();
+
+signals:
+	void LanguageChanged(int lang);
+	void RecordShowChanged(int recordtype);
+	void RecordConfigChanged();
+	void CoreConfChange(const CoreConf& cfg);
+	void DataConfChange(const DataCenterConf& cfg);
 
 private:
     class Impl;

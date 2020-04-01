@@ -3,12 +3,13 @@
 
 #include "UIDataDef.hpp"
 #include "mainui.h"
+#include "dataview.h"
 
-QueryWidget::QueryWidget(QWidget *main, QWidget *parent) :
-    QWidget(parent),
+QueryWidget::QueryWidget(DataView* parent) :
+    QWidget(nullptr),
     ui(new Ui::query)
 {
-    mainui = main;
+    m_pthis = parent;
     ui->setupUi(this);
 
     setWindowFlags(Qt::FramelessWindowHint);
@@ -131,6 +132,11 @@ void QueryWidget::on_listWidget_currentRowChanged( int row )
     }
 }
 
+void QueryWidget::on_rbtn_show_timeinterval_clicked()
+{
+	m_pthis->
+}
+
 void QueryWidget::on_btn_refresh_clicked()
 {
     //获取有记录的日期列表,并保存
@@ -188,33 +194,9 @@ void QueryWidget::on_rbtn_eti_120min_clicked()
     }
 }
 
-//void QueryWidget::closeEvent( QCloseEvent *event )
-//{
-//    mainui->close();
-//    event->accept();
-//}
-
 void QueryWidget::Init()
 {
     ui->listWidget->clear();
-    //根据时间间隔 设置界面显示的时间间隔
-    ETimeInterval ti = signal_GetTimeInterval();
-    switch(ti)
-    {
-    case ETI_30_Min:
-        ui->rbtn_eti_30min->setChecked(true);
-        break;
-    case ETI_60_Min:
-        ui->rbtn_eti_60min->setChecked(true);
-        break;
-    case ETI_90_Min:
-        ui->rbtn_eti_90min->setChecked(true);
-        break;
-    case ETI_120_Min:
-        ui->rbtn_eti_120min->setChecked(true);
-        break;
-    }
-
     on_btn_refresh_clicked();
 }
 
@@ -222,4 +204,11 @@ void QueryWidget::on_btn_goback_clicked()
 {
     this->hide(); 
     mainui->show();
+}
+
+void QueryWidget::ChangeLanguage(const QMap<int, QString>& moldwors, const QMap<int, QString>& sensorwors)
+{
+	m_moldwors = moldwors;
+	m_sensorwors = sensorwors;
+	ui->retranslateUi(this);
 }

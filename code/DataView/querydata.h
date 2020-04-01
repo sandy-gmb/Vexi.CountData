@@ -1,5 +1,5 @@
-#ifndef SETTING_H
-#define SETTING_H
+#ifndef QueryWidget_H
+#define QueryWidget_H
 
 #include <QWidget>
 
@@ -14,13 +14,14 @@
 namespace Ui {
 class query;
 }
+class DataView;
 
 class QueryWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit QueryWidget(QWidget *main, QWidget *parent = 0);
+    explicit QueryWidget(DataView* parent);
     ~QueryWidget();
 
     void Init();
@@ -29,53 +30,29 @@ public:
         void on_dateEdit_dateChanged(QDate d);
         void on_listWidget_currentRowChanged(int row);
 
-        void on_rbtn_eti_30min_clicked();
-        void on_rbtn_eti_60min_clicked();
-        void on_rbtn_eti_90min_clicked();
-        void on_rbtn_eti_120min_clicked();
+		void on_rbtn_show_timeinterval_clicked();
+		void on_rbtn_show_shift_clicked();
 
-        void on_btn_refresh_clicked();
-        void on_btn_goback_clicked();
+		void on_btn_refresh_clicked();
+		void on_btn_to_setting_clicked();
+		void on_btn_to_main_clicked();
 
        // void closeEvent(QCloseEvent *event);
 
-signals:
-    bool signal_GetAllDate(int type, QList<QDate>& lst);
+		void ChangeLanguage(const QMap<int, QString>& moldwors, const QMap<int, QString>& sensorwors);
 
-    bool signal_GetRecordListByDay(QDate date, QList<QTime>& stlst, QList<QTime>& etlst);
-
-    bool signal_GetRecordByTime(QDateTime st, QDateTime et, Record& r);
-
-    /**
-    * @brief  :  GetTimeInterval 获取时间间隔
-    *
-    * @return :  ETimeInterval
-    * @retval :
-    */
-    ETimeInterval signal_GetTimeInterval();
-
-    /**
-    * @brief  :  SetTimeInterval
-    *
-    * @param  :  ETimeInterval timeinterval
-    * @return :  void
-    * @retval :
-    */
-    void signal_SetTimeInterval(ETimeInterval timeinterval);
-
-public:
-    QMap<int, QString> m_moldwors;        //模板ID词条
-    QMap<int, QString> m_sensorwors;      //缺陷ID词条
 private:
+	DataView* m_pthis;
     Ui::query *ui;
 
-    QList<QDate> datelst;
-    QDate curDate;
-    QList<QTime> stlst;
-    QList<QTime> etlst;
+    QList<QDate> datelst;		//数据库存在的日期类型
+    QDate curDate;				//当前显示的日期
+    QList<QTime> stlst;			//当前日期的时间段起始时间列表
+	QList<QTime> etlst;			//当前日期的时间段结束时间列表
+	ERecordType recordtype;		//当前显示记录类型
 
-    QWidget* mainui;
-
+    QMap<int, QString> m_moldwors;        //模板ID词条
+    QMap<int, QString> m_sensorwors;      //缺陷ID词条
 };
 
-#endif // SETTING_H
+#endif // QueryWidget_H

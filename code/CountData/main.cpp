@@ -101,21 +101,27 @@ int main(int argc, char *argv[])
 	DataCenter da;
 	Core core;
 
-	int lang = cfg.GetSoftwareLanguage();
-	DataView view(lang);
+	DataView view;
+
+	QObject::connect(&cfg, SIGNAL(RecordConfigChanged()), &da, SLOT(RecordConfigChanged()));
+	QObject::connect(&cfg, SIGNAL(DataConfChange(const DataCenterConf&)), &da, SLOT(OnDataConfChange(const DataCenterConf&)));
+	QObject::connect(&cfg, SIGNAL(CoreConfChange(const CoreConf&)), &core, SLOT(OnCoreConfChange(const CoreConf&)));
+	QObject::connect(&cfg, SIGNAL(LanguageChanged(int)), &view, SLOT(OnLanguageChanged(int)));
+	QObject::connect(&cfg, SIGNAL(RecordShowChanged(int)), &view, SLOT(OnRecordShowChanged(int)));
 
 	QObject::connect(&da, SIGNAL(GetDataCenterConf(DataCenterConf&)), &cfg, SLOT(GetDataCenterConf(DataCenterConf&)));
-	QObject::connect(&da, SIGNAL(SetGenerateRecordTimeInterval(int)), &cfg, SLOT(SetGenerateRecordTimeInterval(int)));
-	QObject::connect(&core, SIGNAL(signal_GetCoreConf(CoreConf& )), &cfg, SLOT(GetCoreConf(CoreConf& )), Qt::DirectConnection);
-	QObject::connect(&view, SIGNAL(GetWordsTranslationFilePath()), &cfg, SLOT(GetWordsTranslationFilePath()));
 
+	QObject::connect(&core, SIGNAL(signal_GetCoreConf(CoreConf& )), &cfg, SLOT(GetCoreConf(CoreConf& )), Qt::DirectConnection);
 	QObject::connect(&core, SIGNAL(signal_PaserDataToDataBase(const QString& , QString*)), &da, SLOT(PaserDataToDataBase(const QString& , QString*)), Qt::DirectConnection);
+
+	QObject::connect(&view, SIGNAL(signals_GetAllConfig(const AllConfig&)), &cfg, SLOT(GetAllConfig(const AllConfig&)));
+	QObject::connect(&view, SIGNAL(signals_GetWordsTranslation(const QMap<int, QString>& , const QMap<int, QString>&)), &cfg, SLOT(GetWordsTranslation(const QMap<int, QString>& , const QMap<int, QString>&)));
+	QObject::connect(&view, SIGNAL(signals_GetTimeInterval()), &cfg, SLOT(GetTimeInterval()));
+
 	QObject::connect(&view, SIGNAL(signal_GetLastestRecord(int , Record& , QString*)), &da, SLOT(GetLastestRecord(int , Record& , QString*)));
-	QObject::connect(&view, SIGNAL(signal_GetTimeInterval()), &da, SLOT(GetTimeInterval()));
-	QObject::connect(&view, SIGNAL(signal_SetTimeInterval(ETimeInterval)), &da, SLOT(SetTimeInterval(ETimeInterval)));
 	QObject::connect(&view, SIGNAL(signal_GetAllDate(int , QList<QDate>&)), &da, SLOT(GetAllDate(int , QList<QDate>&)));
-	QObject::connect(&view, SIGNAL(signal_GetRecordListByDay(QDate , QList<QTime>& , QList<QTime>&)), &da, SLOT(GetRecordListByDay(QDate , QList<QTime>& , QList<QTime>&)));
-	QObject::connect(&view, SIGNAL(signal_GetRecordByTime(QDateTime , QDateTime , Record&)), &da, SLOT(GetRecordByTime(QDateTime , QDateTime , Record&)));
+	QObject::connect(&view, SIGNAL(signal_GetRecordListByDay(int, QDate , QList<QTime>& , QList<QTime>&)), &da, SLOT(GetRecordListByDay(int, QDate , QList<QTime>& , QList<QTime>&)));
+	QObject::connect(&view, SIGNAL(signal_GetRecordByTime(int, QDateTime , QDateTime , Record&)), &da, SLOT(GetRecordByTime(int, QDateTime , QDateTime , Record&)));
 	QObject::connect(&view, SIGNAL(closed()), &core, SLOT(stop()), Qt::QueuedConnection);
 	QObject::connect(&view, SIGNAL(closed()), &da, SLOT(Stop()));
 

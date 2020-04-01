@@ -1,5 +1,6 @@
 #include "mainui.h"
 #include "ui_mainui.h"
+#include "dataview.h"
 
 #include <QMap>
 #include <QPair>
@@ -10,19 +11,14 @@
 #include "setting.h"
 #include "UIDataDef.hpp"
 
-MainUI::MainUI(QWidget *parent) :
-    QWidget(parent),
+MainUI::MainUI(DataView *parent) : 
+	QWidget(nullptr),
     ui(new Ui::MainUI)
 {
     ui->setupUi(this);
 	//初始化界面
-	ui->tb_record->setRowCount(0);
-	ui->tb_record->setColumnCount(0);
-	ui->l_error->setText(tr("No Latest Data"));
-	ui->ledt_date->setText("");
-	ui->ledt_starttime->setText("");
-	ui->ledt_endtime->setText("");
-    updated = false;
+	Init();
+	refreshWidget();
 }
 
 MainUI::~MainUI()
@@ -35,7 +31,7 @@ MainUI::~MainUI()
 void MainUI::GetData()
 {
     bool rt = false;
-    rt = signal_GetLastestRecord(0, record, nullptr);
+    rt = m_pthis->signal_GetLastestRecord((int)recordtype, record, nullptr);
     if(rt )
     {
        updated = true; 
@@ -48,19 +44,10 @@ void MainUI::updateUI()
     {
         return;
     }
-
-	QDateTime t = QDateTime::currentDateTime();
+	
 	SimpleRecord r;
-	if(record.dt_end < t)
-	{
-		updated =false;
-		return;
-	}
-	else
-	{
-		r.SetRecord(record);
-		updated = false;
-	}
+	r.SetRecord(record);
+	updated = false;
 
     ui->tb_record->clear();
     if(r.inspected == 0)
@@ -74,7 +61,11 @@ void MainUI::updateUI()
     }
     else
     {
-        ui->l_error->setText("");
+		if(recordtype == ERT_Shift)
+		{
+			ui->l_timeinterval->setText(tr("Shift:%1-%2.").arg(r.shiftDate.toString("yyyy-MM-dd")).arg(r.shift));
+		}
+		ui->l_error->setText("");
         ui->ledt_date->setText(r.dt_start.date().toString("yyyy-MM-dd"));
         ui->ledt_starttime->setText(r.dt_start.time().toString("hh:mm:ss"));
         ui->ledt_endtime->setText(r.dt_end.time().toString("hh:mm:ss"));
@@ -143,13 +134,6 @@ void MainUI::updateUI()
     }
 }
 
-void MainUI::on_btn_settings_clicked()
-{
-	m_settingui->on_btn_refresh_clicked();
-	m_settingui->show();
-    hide();
-}
-
 void MainUI::UpdateTimeInterval( ETimeInterval ti )
 {
     int eti = ETimeInterval2Min(ti);
@@ -158,9 +142,6 @@ void MainUI::UpdateTimeInterval( ETimeInterval ti )
 
 void MainUI::Init()
 {
-    ETimeInterval ti = signal_GetTimeInterval();
-
-    UpdateTimeInterval(ti);
     m_timer = new QTimer(this);
 
     connect(m_timer, SIGNAL(timeout()), this, SLOT(GetData()));
@@ -174,6 +155,47 @@ void MainUI::closeEvent( QCloseEvent *event )
     m_timer->stop();
 
     emit closed();
-    m_settingui->close();
     event->accept();
+}
+
+void MainUI::ChangeLanguage(const QMap<int, QString>& moldwors, const QMap<int, QString>& sensorwors)
+{
+	m_moldwors = moldwors;
+	m_sensorwors = sensorwors;
+	ui->retranslateUi(this);
+}
+
+void MainUI::ChangedShowRecordT(ERecordType type)
+{
+	recordtype = type;
+}
+
+void MainUI::refreshWidget()
+{
+	if(recordtype == ERT_TimeInterval)
+	{//更新间隔显示,如果配置界面改了,此处更新即可
+		ETimeInterval ti = (ETimeInterval)m_pthis->signals_GetTimeInterval();
+		if(recordtype == ERT_Shift)
+		{
+			UpdateTimeInterval(ti);
+		}
+	}
+	//初始化界面状态
+	ui->tb_record->setRowCount(0);
+	ui->tb_record->setColumnCount(0);
+	ui->l_error->setText(tr("No Latest Data"));
+	ui->ledt_date->setText("");
+	ui->ledt_starttime->setText("");
+	ui->ledt_endtime->setText("");
+	updated = false;
+}
+
+void MainUI::on_btn_to_query_clicked()
+{
+	m_pthis->OnChangeUI(EUI_QueryData);
+}
+
+void MainUI::on_btn_to_settings_clicked()
+{
+	m_pthis->OnChangeUI(EUI_Settings);
 }

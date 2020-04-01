@@ -4,108 +4,104 @@
 #include <QVariant>
 #include <QFile>
 #include <QTime>
+#include <QSharedPointer>
+#include <QStringList>
+
+#include "DataDef.hpp"
 
 #define ConfigDir "Config"
 #define ConfigFile "config.ini"
 
 #define DefaultWordsFilePrefix "Words"
 
-enum ELanguage
-{
-    EL_Chinese  = 0,         //中文
-    EL_English  = 1,         //英文
-};
-
 class Config::Impl
 {
 public:
     void Init()
     {
-		QString filep = QString("%1/%2").arg(ConfigDir).arg(ConfigFile);
-		if(!QFile::exists(filep))
-		{
-			SaveDefaultValue();
-		}
-        QSettings sets(filep, QSettings::IniFormat);
-        sets.setIniCodec(QTextCodec::codecForName("UTF-8"));
-        //策略相关配置
-        bStrategyMode = sets.value("strategy/mode", true).toBool();
-        lSensorIDs.clear();
-        int size = sets.beginReadArray("strategy/sensorids");
-        for(int i = 0; i < size; i++)
-        {
-            sets.setArrayIndex(i);
-            int id = sets.value("id", -1).toInt();
-            lSensorIDs.push_back(id);
-        }
-        sets.endArray();
-        //时间间隔等配置 system
-        iTimeInterval_GeneRecord = sets.value("system/time_interval_generate_record", 0).toInt();
-        iTimeInterval_GetSrcData = sets.value("system/time_interval_get_src_data", 60).toInt();
-        iDaysDataOutDate = sets.value("system/data_outdate_days", 30).toInt();
-
-        //系统语言及词条文件相关配置
-        iLanguage = sets.value("system/language", 0).toInt();
-		sCodetsprefix = sets.value("system/code_file_prefix", "Words").toString();
-		bReadSrcData = sets.value("system/isreadsrcdata", false).toBool();
-		bSaveSrcData = sets.value("system/issavesrcdata", false).toBool();
-		iLogLevel = sets.value("system/loglevel", 2).toInt();
-
-		size = sets.beginReadArray("class");
+		QSettings sets(QString("%1/%2").arg(ConfigDir).arg(ConfigFile),QSettings::IniFormat);
+		sets.setIniCodec(QTextCodec::codecForName("UTF-8"));
+		//策略相关配置
+		cfgStrategy.bStrategyMode = sets.value("strategy/mode", false).toBool();
+		int size = sets.beginReadArray("strategy/sensorids");
 		for(int i = 0; i < size; i++)
 		{
 			sets.setArrayIndex(i);
-			QString t = sets.value("time", "00:00:00").toString();
-			lShiftTime.push_back(QTime::fromString("hh:mm:ss"));
+			cfgStrategy.lSensorIDs.append(sets.value("id", -1).toInt());
 		}
-		if(lShiftTime.size() == 0)
+		sets.endArray();
+
+		//系统配置
+		cfgSystem.iTimeInterval_GeneRecord = sets.value("system/time_interval_generate_record", 5).toInt();
+		cfgSystem.iTimeInterval_GetSrcData = sets.value("system/time_interval_get_src_data", 5).toInt();
+		cfgSystem.iDaysDataOutDate = sets.value("system/data_outdate_days", 30).toInt();
+		cfgSystem.iDefaultShow = sets.value("system/show_record_type", 1).toInt();
+		cfgSystem.iLanguage = sets.value("system/language", 0).toInt();
+		cfgSystem.sCodetsprefix = sets.value("system/code_file_prefix", "CodeTs").toString();
+		//时间间隔
+		eTimeInterval = (ETimeInterval)sets.value("timeInterval/time_interval", 0).toInt();
+		//班次
+		size = sets.beginReadArray("shift/shift");
+		QList<QString> shifttime;
+		for(int i = 0; i < size; i++)
 		{
-			lShiftTime.append(QTime::fromString("00:00:00"));
-			sets.beginWriteArray("Shift", lShiftTime.size());
-			for(int i = 0; i < lShiftTime.size(); i++)
-			{
-				sets.setArrayIndex(i);
-				sets.setValue("time", lShiftTime[i].toString("hh:mm:ss"));
-			}
-			sets.endArray();
+			sets.setArrayIndex(i);
+			shifttime.append(sets.value("time", "00:00:00").toString()) ;
 		}
+		if(shifttime.isEmpty())
+		{
+			shifttime.append("00:00:00");
+			sets.beginWriteArray("shift", 1);
+			sets.setArrayIndex(0);
+			sets.setValue("time", "00:00:00");
+			sets.endArray();
+			sets.sync();
+		}
+		ptrShift = QSharedPointer<Shift>(new Shift(shifttime));
+		//调试配置
+		cfgDebug.bReadSrcData = sets.value("debug/is_read_source_data", false).toBool();
+		cfgDebug.bSaveSrcData = sets.value("debug/is_save_source_data", false).toBool();
+		cfgDebug.iLogLevel = sets.value("debug/log_level", 2).toInt();
+		sets.sync();
     }
 
     void Save()
     {
-        QSettings sets(QString("%1/%2").arg(ConfigDir).arg(ConfigFile),QSettings::IniFormat);
-        sets.setIniCodec(QTextCodec::codecForName("UTF-8"));
-        //策略相关配置
-        sets.setValue("strategy/mode", bStrategyMode);
-        sets.beginWriteArray("strategy/sensorids", lSensorIDs.size());
-        for(int i = 0; i < lSensorIDs.size(); i++)
-        {
-            sets.setArrayIndex(i);
-            sets.setValue("id", lSensorIDs[i]);
-        }
-        sets.endArray();
-
-        //时间间隔等配置 system
-        sets.setValue("system/time_interval_generate_record", iTimeInterval_GeneRecord);
-        sets.setValue("system/time_interval_get_src_data", iTimeInterval_GetSrcData);
-        sets.setValue("system/data_outdate_days", iDaysDataOutDate);
-
-        //系统语言及词条文件相关配置
-        sets.setValue("system/language", iLanguage);
-		sets.setValue("system/code_file_prefix", sCodetsprefix);
-		sets.setValue("system/isreadsrcdata", bReadSrcData);
-		sets.setValue("system/issavesrcdata", bSaveSrcData);
-		sets.setValue("system/loglevel", iLogLevel);
-		//班次
-		sets.beginWriteArray("Shift", lShiftTime.size());
-		for(int i = 0; i < lShiftTime.size(); i++)
+		QSettings sets(QString("%1/%2").arg(ConfigDir).arg(ConfigFile),QSettings::IniFormat);
+		sets.setIniCodec(QTextCodec::codecForName("UTF-8"));
+		//策略相关配置
+		sets.setValue("strategy/mode", cfgStrategy.bStrategyMode);
+		sets.beginWriteArray("strategy/sensorids", cfgStrategy.lSensorIDs.size());
+		for(int i = 0; i < cfgStrategy.lSensorIDs.size(); i++)
 		{
 			sets.setArrayIndex(i);
-			sets.setValue("time", lShiftTime[i].toString("hh:mm:ss"));
+			sets.setValue("id", cfgStrategy.lSensorIDs[i]);
 		}
 		sets.endArray();
-        sets.sync();
+
+		//系统配置
+		sets.setValue("system/time_interval_generate_record", cfgSystem.iTimeInterval_GeneRecord);
+		sets.setValue("system/time_interval_get_src_data", cfgSystem.iTimeInterval_GetSrcData);
+		sets.setValue("system/data_outdate_days", cfgSystem.iDaysDataOutDate);
+		sets.setValue("system/show_record_type", cfgSystem.iDefaultShow);
+		sets.setValue("system/language", cfgSystem.iLanguage);
+		sets.setValue("system/code_file_prefix", cfgSystem.sCodetsprefix);
+		//时间间隔
+		sets.setValue("timeInterval/time_interval", (int)eTimeInterval);
+		//班次
+		sets.beginWriteArray("shift/shift", ptrShift->shifttime.size());
+		for(int i = 0; i < ptrShift->shifttime.size(); i++)
+		{
+			sets.setArrayIndex(i);
+			sets.setValue("time", ptrShift->shifttime[i].toString("hh:mm:ss"));
+		}
+		//调试配置
+		sets.setValue("debug/is_read_source_data", cfgDebug.bReadSrcData);
+		sets.setValue("debug/is_save_source_data", cfgDebug.bSaveSrcData);
+		sets.setValue("debug/log_level", cfgDebug.iLogLevel);
+		sets.sync();
     }
+
 	void SaveDefaultValue()
 	{
 		QSettings sets(QString("%1/%2").arg(ConfigDir).arg(ConfigFile),QSettings::IniFormat);
@@ -119,43 +115,78 @@ public:
 		sets.setValue("id", 34);
         sets.endArray();
 
-        //时间间隔等配置 system
-        sets.setValue("system/time_interval_generate_record", 5);
-        sets.setValue("system/time_interval_get_src_data", 5);
-        sets.setValue("system/data_outdate_days", 30);
-
-        //系统语言及词条文件相关配置
-        sets.setValue("system/language", 0);
+		//系统配置
+		sets.setValue("system/time_interval_generate_record", 5);
+		sets.setValue("system/time_interval_get_src_data", 1);
+		sets.setValue("system/data_outdate_days", 30);
+		sets.setValue("system/language", 0);
+		sets.setValue("system/show_record_type", 1);
 		sets.setValue("system/code_file_prefix", "CodeTs");
-		sets.setValue("system/isreadsrcdata", false);
-		sets.setValue("system/issavesrcdata", false);
-		sets.setValue("system/loglevel", 2);
+		//时间间隔
+		sets.setValue("timeInterval/time_interval", 5);
+		//班次
+		sets.beginWriteArray("shift/shift", 1);
+		sets.setArrayIndex(0);
+		sets.setValue("time", "00:00:00");
+		sets.endArray();
+		//调试配置
+		sets.setValue("debug/is_read_source_data", false);
+		sets.setValue("debug/is_save_source_data", false);
+		sets.setValue("debug/log_level", 2);
         sets.sync();
 	}
 
+	void ParseTranslationWords()
+	{
+		//根据语言找到对应的文件名
+		QString lang = "_zh";
+		if(cfgSystem.iLanguage == EL_English)
+		{
+			lang = "_en";
+		}
+		QString suffix = ".ini";
+		QString prefix = cfgSystem.sCodetsprefix;
+		if(prefix == "")
+		{
+			cfgSystem.sCodetsprefix = DefaultWordsFilePrefix;
+		}
+		QString filep = QString("%1/%2%3%4").arg(ConfigDir).arg(prefix).arg(lang).arg(suffix);
+		moldwors.clear();
+		sensorwors.clear();
+		if(QFile::exists(filep))
+		{//解析词条文件 
+			QSettings sets(filep, QSettings::IniFormat);
+			sets.setIniCodec(QTextCodec::codecForName("UTF-8"));
+
+			sets.beginGroup("MoldWords");
+			QStringList keys = sets.childKeys();
+			foreach(QString key, keys)
+			{
+				moldwors.insert(key.toInt(), sets.value(key).toString()  ) ;
+			}
+			sets.endGroup();
+			sets.beginGroup("SensorWords");
+			keys = sets.childKeys();
+			foreach(QString key, keys)
+			{
+				sensorwors.insert(key.toInt(), sets.value(key).toString() ) ;
+			}
+			sets.endGroup();
+		}
+	}
+
 public:
-    bool bStrategyMode;                 //策略模式 true表示 白名单 false表示黑名单
-    QList<int> lSensorIDs;               //策略影响的缺陷ID列表
-    int iTimeInterval_GeneRecord;       //时间间隔,用于在多长时间生成一条统计记录 1:60分钟 2:90分钟;3:120分钟 其他:30分钟 具体使用由DataCenter决定
-    int iDaysDataOutDate;               //原始数据有效天数 单位:天,超过此时间,数据库会删除
-	bool bReadSrcData;					//是否读取源数据文件
-	bool bSaveSrcData;					//是否保存源数据到数据文件
-	int iLogLevel;						//日志级别
-	int iDefaultShow;					//界面默认显示 0:按时间间隔显示 1:按班次显示
+	QSharedPointer<Shift> ptrShift;		//用来计算班次的对象
 
-    int iTimeInterval_GetSrcData;       //获取原始数据的时间间隔 单位:秒
+	StrategyConfig cfgStrategy;		//策略相关配置
+	SystemConfig cfgSystem;			//系统相关配置
+	ETimeInterval eTimeInterval;	//时间间隔 按时间间隔的时间段统计记录 1:60分钟 2:90分钟;3:120分钟 其他:30分钟 具体使用由DataCenter决定
+	DebugConfg cfgDebug;			//调试相关配置
 
-    int iLanguage;                       //语言 0:中文 1:英文 涉及到界面显示语言和使用的词条对应文件名
-    QString sCodetsprefix;              //词条文件前缀 如配置为Error,语言配置为0,则实际使用文件为Error_zh.ini
-	/*班次时间定义说明:
-	1 班次的所属日期为整天时间占比最多的那个日期 
-	2 第一个设定时间开始为一天的统计起始时间
-	3 如果前一个时间比后一个时间大(后一个时间比前一个时间小),则后一个时间在前一个时间的下一个日期的时间
-	4 一天班次有几个,则设定的时间点则有几个,最后一个时间点到下一个第一个时间点之间的时间段为班次的最后一个班
-	5 班次定义为24小时,所以所有班次时间点定义 跨时间只会存在一次,
-	*/
-	QList<QTime> lShiftTime;			//班次时间点的配置 
-};
+	//界面显示的词条翻译对象 需要根据语言解析对应翻译文件 用于界面显示
+	QMap<int, QString> moldwors;	//模板号翻译
+	QMap<int, QString> sensorwors;	//缺陷ID翻译
+};	
 
 
 //内部实质管理一个文件 另外词条对应系统 使用的文件为一系列 
@@ -175,53 +206,120 @@ Config::~Config()
 
 void Config::GetDataCenterConf( DataCenterConf& cfg )
 {
-    cfg.bStrategyMode = pimpl->bStrategyMode;
-    cfg.lSensorIDs = pimpl->lSensorIDs;
-    cfg.iTimeInterval_GeneRecord = pimpl->iTimeInterval_GeneRecord;
-    cfg.iDaysDataOutDate = pimpl->iDaysDataOutDate;
-}
-
-int Config::GetSoftwareLanguage()
-{
-    return pimpl->iLanguage;
-}
-
-QString Config::GetWordsTranslationFilePath()
-{
-    QString lang = "_zh";
-    if(pimpl->iLanguage == EL_English)
-    {
-        lang = "_en";
-    }
-    QString suffix = ".ini";
-    QString prefix = pimpl->sCodetsprefix;
-    if(pimpl->sCodetsprefix == "")
-    {
-        pimpl->sCodetsprefix = DefaultWordsFilePrefix;
-    }
-    return QString("%1/%2%3%4").arg(ConfigDir).arg(prefix).arg(lang).arg(suffix);
-}
-
-int Config::GetTimeOfObtainSrcData()
-{
-    return pimpl->iTimeInterval_GetSrcData;
-}
-
-void Config::SetGenerateRecordTimeInterval( int ti )
-{
-    pimpl->iTimeInterval_GeneRecord = ti;
-    pimpl->Save();
+	cfg.eTimeInterval = pimpl->eTimeInterval;
+	cfg.ptrShift = pimpl->ptrShift;
+	cfg.strategy = pimpl->cfgStrategy;
+	cfg.syscfg = pimpl->cfgSystem;
 }
 
 void Config::GetCoreConf(CoreConf& cfg)
 {
-	cfg.bReadSrcData = pimpl->bReadSrcData;
-	cfg.bSaveSrcData = pimpl->bSaveSrcData;
-	cfg.iTimeInterval_GetSrcData = pimpl->iTimeInterval_GetSrcData;
+	cfg.dbgcfg = pimpl->cfgDebug;
+	cfg.syscfg = pimpl->cfgSystem;
+}
+
+void Config::GetAllConfig(AllConfig& cfg)
+{
+	cfg.dbgcfg = pimpl->cfgDebug;
+	cfg.shiftlst = pimpl->ptrShift->getShiftTimeList();
+	cfg.strategy = pimpl->cfgStrategy;
+	cfg.syscfg = pimpl->cfgSystem;
+	cfg.eTimeInterval = pimpl->eTimeInterval;
+}
+
+void Config::SetAllConfig(const AllConfig& cfg)
+{
+	bool debug, sys, strategy, timeinterval, shift, show, lang;
+	debug = sys = strategy = timeinterval = shift = show = lang = true;
+	
+	if(cfg.dbgcfg != pimpl->cfgDebug)
+	{
+		pimpl->cfgDebug = cfg.dbgcfg;
+		debug = false;
+	}
+	if(cfg.syscfg != pimpl->cfgSystem)
+	{
+		if(cfg.syscfg.iDefaultShow == pimpl->cfgSystem.iDefaultShow)
+		{
+			show = false;
+		}
+		if(cfg.syscfg.iLanguage == pimpl->cfgSystem.iLanguage)
+		{
+			lang = false;
+		}
+
+		pimpl->cfgSystem = cfg.syscfg;
+		sys = false;
+	}
+	if(cfg.strategy != pimpl->cfgStrategy)
+	{
+		pimpl->cfgStrategy = cfg.strategy;
+		strategy = false;
+	}
+	if( *pimpl->ptrShift != cfg.shiftlst)
+	{
+		pimpl->ptrShift->reset(cfg.shiftlst);
+		shift = false;
+	}
+	if(cfg.eTimeInterval != pimpl->eTimeInterval)
+	{
+		pimpl->eTimeInterval = cfg.eTimeInterval;
+		timeinterval = false;
+	}
+
+	if(!timeinterval || !shift)
+	{
+		emit RecordConfigChanged();
+	}
+	if(!debug || !sys)
+	{
+		CoreConf cfg;
+		GetCoreConf(cfg);
+		emit CoreConfChange(cfg);
+	}
+
+	if( !sys || !strategy || !timeinterval || shift)
+	{
+		DataCenterConf cfg;
+		GetDataCenterConf(cfg);
+		emit DataConfChange(cfg);
+	}
+
+	if(!show)
+	{
+		emit RecordShowChanged(cfg.syscfg.iDefaultShow);
+	}
+
+	if(!lang)
+	{
+		emit LanguageChanged(cfg.syscfg.iLanguage);
+	}
+	
 }
 
 int Config::GetConfigLogLevel()
 {
-	return pimpl->iLogLevel;
+	return pimpl->cfgDebug.iLogLevel;
+}
+
+void Config::GetWordsTranslation(const QMap<int, QString>& moldwors, const QMap<int, QString>& sensorwors)
+{
+	QString lang = "_zh";
+	if(pimpl->cfgSystem.iLanguage == EL_English)
+	{
+		lang = "_en";
+	}
+	QString suffix = ".ini";
+	QString prefix = pimpl->cfgSystem.sCodetsprefix;
+	if(prefix == "")
+	{
+		pimpl->cfgSystem.sCodetsprefix = DefaultWordsFilePrefix;
+	}
+	//return QString("%1/%2%3%4").arg(ConfigDir).arg(prefix).arg(lang).arg(suffix);
+}
+
+int Config::GetTimeInterval()
+{
+	return (int)pimpl->eTimeInterval;
 }
 

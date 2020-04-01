@@ -12,6 +12,7 @@
 #include <QSqlDatabase>
 
 #include "DBOperDef.hpp"
+#include "ConfigDef.hpp"
 
 class DBOperation;
 
@@ -39,8 +40,10 @@ public:
 	DBOperation* m_pthis;
 
     bool runflg ;				//运行标志 用于控制线程退出
+
     ETimeInterval eti;			//时间间隔 分
-    int outdatedays;			//实时数据过期时间
+
+	SystemConfig cfgSystem;		
 	QSharedPointer<Shift> shift;//班次计算对象
 };
 #endif//GenerateRecord_JQQ8207II27VSQ97_H_

@@ -15,7 +15,6 @@ using namespace std;
 class Core::Impl
 {
 public:
-
     struct soap m_oSoap;
 };
 
@@ -43,14 +42,7 @@ Core::~Core()
 
 void Core::run()
 {
-	CoreConf cfg;
     signal_GetCoreConf(cfg);
-    if( cfg.iTimeInterval_GetSrcData > 0)
-    {
-        timeinterval = cfg.iTimeInterval_GetSrcData;
-	}
-	bool readfile = cfg.bReadSrcData;
-	bool issavesrcdata = cfg.bSaveSrcData;
 	
 	// WebService调用对象
 	class _ns1__Counts getMobileCodeObject;
@@ -59,7 +51,7 @@ void Core::run()
 
 	fstream ifs;
 	QStringList srcdata;
-	if(readfile)
+	if(cfg.dbgcfg.bReadSrcData)
 	{
 		ifs.open("srcdata.txt", ios::in );
 		if(ifs.is_open())
@@ -87,7 +79,7 @@ void Core::run()
     while (isrun)
     {//每半个小时执行一次
         int lastres = nResult;
-		if(srcdata.isEmpty() || !readfile)
+		if(srcdata.isEmpty() || !cfg.dbgcfg.bReadSrcData)
 		{
 			// 发送WebService请求，并获得返回结果
 			nResult = soap_call___ns1__Counts(&pimpl->m_oSoap,NULL,NULL,&getMobileCodeObject,getMobileCodeResponseObject);
@@ -101,7 +93,7 @@ void Core::run()
         if(SOAP_OK == nResult)
         {
 			QString xmlstr;
-			if(readfile && !srcdata.isEmpty())
+			if(cfg.dbgcfg.bReadSrcData && !srcdata.isEmpty())
 			{
 				xmlstr = srcdata[idx];
 				idx = (idx+1)%srcdata.size();
@@ -114,7 +106,7 @@ void Core::run()
 			}
            
             QString err;
-			if(!readfile && issavesrcdata)
+			if(!cfg.dbgcfg.bReadSrcData && cfg.dbgcfg.bSaveSrcData)
 			{
 				ifs.open("srcdata.txt", ios::out | ios::app);
 				if( ifs.is_open())
@@ -139,14 +131,19 @@ void Core::run()
             }
         }
 
-        Sleep(timeinterval*1000);
+        Sleep(cfg.syscfg.iTimeInterval_GetSrcData *1000);
     }
-    ELOGD("Core Exit");
+    ELOGI("Core Exit");
 }
 
 void Core::stop()
 {
     isrun = false;
 	wait(1000);
+}
+
+void Core::OnCoreConfChange(const CoreConf& _cfg)
+{
+	cfg = _cfg;
 }
 

@@ -1,6 +1,7 @@
 #include "dataview.h"
 #include "mainui.h"
 #include "setting.h"
+#include "querydata.h"
 
 #include <QTranslator>
 #include <QCoreApplication>
@@ -14,32 +15,20 @@ class DataView::Impl
 {
 public:
     MainUI* m_mainui;
-    setting* m_settingui; 
+    SettingWidget* m_settingui; 
+	QueryWidget* m_query;
 
     QMap<int, QString> m_moldwors;        //模板ID词条
     QMap<int, QString> m_sensorwors;      //缺陷ID词条
 };
 
-DataView::DataView(int lang, QObject* parent)
+DataView::DataView( QObject* parent)
     : QObject(parent)
     , pimpl(new Impl)
 {
-    //设置使用的翻译文件
-    QString tsfile = "DataView";
-    if(lang == 1){
-        tsfile += "_en.qm";
-    }else
-    {
-        tsfile += "_zh.qm";
-    }
-
-    QTranslator *pTran = new QTranslator(qApp);
-    pTran->load(tsfile);
-    qApp->installTranslator(pTran);
-
-    pimpl->m_mainui = new MainUI;
-    pimpl->m_settingui = new setting(pimpl->m_mainui);
-    pimpl->m_mainui->m_settingui = pimpl->m_settingui;
+    pimpl->m_mainui = new MainUI(this);
+	pimpl->m_query = new QueryWidget(this);
+    pimpl->m_settingui = new SettingWidget(this);
 
     connect(pimpl->m_mainui, SIGNAL(signal_GetLastestRecord(int, Record& , QString* )), this, SIGNAL(signal_GetLastestRecord(int, Record& , QString* )));
     connect(pimpl->m_mainui, SIGNAL(signal_GetTimeInterval( )), this, SIGNAL(signal_GetTimeInterval( )));
@@ -65,34 +54,72 @@ void DataView::show()
     pimpl->m_mainui->show();
 }
 
+void DataView::OnLanguageChange(ELanguage lang)
+{
+	//设置使用的翻译文件
+	QString tsfile = "DataView";
+	if(lang == EL_English){
+		tsfile += "_en.qm";
+	}else
+	{
+		tsfile += "_zh.qm";
+	}
+	static QTranslator* pTran;
+	if (pTran != NULL)
+	{
+		qApp->removeTranslator(pTran);
+		delete pTran;
+		pTran = NULL;
+	}
+	pTran = new QTranslator;
+	pTran->load(tsfile);
+	qApp->installTranslator(pTran);
+
+	QMap<int, QString> moldwors;
+	QMap<int, QString> sensorwors;
+	signals_GetWordsTranslation(moldwors, sensorwors);
+	pimpl->m_mainui->ChangeLanguage(moldwors, sensorwors);
+	pimpl->m_query->ChangeLanguage(moldwors, sensorwors);
+	pimpl->m_settingui->ChangeLanguage();
+}
+
+
+void DataView::OnChangeUI(EUISelection sel)
+{
+	switch(sel)
+	{
+	case EUI_Main:
+		pimpl->m_mainui->refreshWidget();
+		pimpl->m_mainui->show();
+		pimpl->m_query->hide();
+		pimpl->m_settingui->hide();
+		break;
+	case EUI_QueryData:
+		pimpl->m_query->on_btn_refresh_clicked();
+		pimpl->m_query->show();
+		pimpl->m_mainui->hide();
+		pimpl->m_settingui->hide();
+		break;
+	case EUI_Settings:
+		AllConfig cfg;
+		signals_GetAllConfig(cfg);
+
+		//pimpl->m_settingui->refreshWidget();
+		pimpl->m_settingui->show();
+		pimpl->m_query->hide();
+		pimpl->m_mainui->hide();
+		break;
+	}
+}
+
+void DataView::OnRecordConfigChanged()
+{//更新信息
+
+}
+
 void DataView::Init()
 {
-    {//解析词条文件 
-        QString filep = GetWordsTranslationFilePath();
-        QSettings sets(filep, QSettings::IniFormat);
-        sets.setIniCodec(QTextCodec::codecForName("UTF-8"));
-        
-        sets.beginGroup("MoldWords");
-        QStringList keys = sets.childKeys();
-        foreach(QString key, keys)
-        {
-            pimpl->m_moldwors.insert(key.toInt(), sets.value(key).toString()  ) ;
-        }
-        sets.endGroup();
-        sets.beginGroup("SensorWords");
-        keys = sets.childKeys();
-        foreach(QString key, keys)
-        {
-            pimpl->m_sensorwors.insert(key.toInt(), sets.value(key).toString() ) ;
-        }
-        sets.endGroup();
-    }
-    pimpl->m_mainui->m_moldwors = pimpl->m_moldwors;
-    pimpl->m_mainui->m_sensorwors = pimpl->m_sensorwors;
-    pimpl->m_settingui->m_moldwors = pimpl->m_moldwors;
-    pimpl->m_settingui->m_sensorwors = pimpl->m_sensorwors;
-
-    pimpl->m_mainui->Init();
+	pimpl->m_mainui->Init();
+	pimpl->m_query->Init();
     pimpl->m_settingui->Init();
-
 }

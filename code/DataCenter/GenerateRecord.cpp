@@ -266,7 +266,7 @@ GenerateRecord::GenerateRecord( QObject *parent /*= nullptr*/ )
 
 	eti = ETI_30_Min;
 	//默认30天过期
-	outdatedays = 30;
+	cfgSystem.iDaysDataOutDate = 30;
 
 }
 
@@ -297,7 +297,7 @@ void GenerateRecord::work()
 			int d = dellast.daysTo(QDateTime::currentDateTime());
 			if(dellast.daysTo(QDateTime::currentDateTime()) >= 1)
 			{
-				m_pthis->DeleteOutdatedData(outdatedays);
+				m_pthis->DeleteOutdatedData(cfgSystem.iDaysDataOutDate);
 				dellast = QDateTime::currentDateTime();
 			}
 			if(!runflg){

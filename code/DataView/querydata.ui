@@ -63,7 +63,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="rbtn_eti_30min">
+           <widget class="QRadioButton" name="rbtn_show_timeinterval">
             <property name="font">
              <font>
               <pointsize>11</pointsize>
@@ -90,7 +90,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="rbtn_eti_60min">
+           <widget class="QRadioButton" name="rbtn_show_shift">
             <property name="font">
              <font>
               <pointsize>11</pointsize>

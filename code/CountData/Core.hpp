@@ -11,10 +11,11 @@ public:
     Core(QObject* parent = nullptr);
     ~Core();
 
-    public slots:
+public slots:
     void run();
 
     void stop();
+	void OnCoreConfChange(const CoreConf& _cfg);
 
     signals:
         /**
@@ -35,7 +36,8 @@ public:
     Impl * pimpl;
 
 
-    int timeinterval;
+	int timeinterval;
+	CoreConf cfg;
 
     bool isrun;
 };

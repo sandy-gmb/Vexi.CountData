@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>540</width>
-    <height>283</height>
+    <width>706</width>
+    <height>308</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,13 +29,13 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>60</width>
+         <width>82</width>
          <height>0</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>60</width>
+         <width>82</width>
          <height>16777215</height>
         </size>
        </property>
@@ -95,13 +95,13 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>60</width>
+         <width>82</width>
          <height>0</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>60</width>
+         <width>82</width>
          <height>16777215</height>
         </size>
        </property>
@@ -373,7 +373,25 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="btn_settings">
+      <widget class="QPushButton" name="btn_to_query">
+       <property name="maximumSize">
+        <size>
+         <width>100</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>QueryOther</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_to_settings">
        <property name="maximumSize">
         <size>
          <width>80</width>
@@ -396,7 +414,7 @@
     <widget class="QTableWidget" name="tb_record">
      <property name="font">
       <font>
-       <pointsize>11</pointsize>
+       <pointsize>9</pointsize>
       </font>
      </property>
      <property name="styleSheet">

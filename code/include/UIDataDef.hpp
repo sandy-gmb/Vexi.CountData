@@ -21,6 +21,9 @@ public:
     QList<QPair<int, int> > mold_rejects;               //模板剔废数  界面要求升序排列
     QList<QPair<int, int> > sensor_rejects;             //缺陷剔废数  界面要求升序排列
 
+	QDate shiftDate;	//班次的日期
+	int shift;			//班次的整数
+
     void SetRecord(const Record& r)
     {
         inspected = r.inspected;
@@ -28,6 +31,8 @@ public:
         defects = r.defects;
         dt_start = r.dt_start;
         dt_end = r.dt_end;
+		shiftDate = r.date;
+		shift = r.shift;
 
         QMap<int, int> mold_rej;                      //模板剔废数 
         QMap<int, int> sensor_rej;                    //缺陷剔废数 

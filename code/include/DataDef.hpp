@@ -210,20 +210,30 @@ inline int ETimeInterval2Min(ETimeInterval eti)
 class Shift
 {
 public:
-	Shift(const QList<QTime>& tlst)
-		: shifttime(tlst)
+	Shift(const QList<QString>& tlst)
 	{
-		sorttime = tlst;
+		reset(tlst);
+	}
+
+	void reset(const QList<QString>& tlst)
+	{
+		shifttime.clear();
+		foreach(QString t, tlst)
+		{
+			shifttime.append(QTime::fromString(t));
+		}
+
+		sorttime = shifttime;
 		qSort(sorttime);
 		if(tlst.size() == 1)
 		{
-			changtime = tlst.first();
+			changtime = shifttime.first();
 			afterflag = false;
 		}
 		else
 		{
-			changtime = tlst.first();
-			if(24 - tlst.first().hour() >= 12)
+			changtime = shifttime.first();
+			if(24 - shifttime.first().hour() >= 12)
 			{
 				afterflag = false;
 			}
@@ -232,6 +242,16 @@ public:
 				afterflag = true;
 			}
 		}
+	}
+
+	QList<QString> getShiftTimeList()
+	{
+		QList<QString> tlst;
+		foreach(QTime t, shifttime)
+		{
+			tlst.append(t.toString("hh:mm:ss"));
+		}
+		return tlst;
 	}
 
 	QDateTime getNextShiftTime(const QDateTime& _t)
@@ -301,8 +321,30 @@ public:
 			shift = shifttime.size()-1;
 		}
 	}
-private:
+
+	bool operator!=(const QList<QString>& l)const
+	{
+		if(shifttime.size() != l.size())
+		{
+			return false;
+		}
+		for(int i = 0; i < l.size(); i++)
+		{
+			if(shifttime[i] != QTime::fromString(l[i]))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	bool operator!=(const Shift& l)const
+	{
+		return shifttime != l.shifttime;
+	}
+public:
 	QList<QTime> shifttime;	//班次切换时间点
+private:
 	QList<QTime> sorttime;	//排序时间
 	
 	QTime changtime;		//一天的切换时间点
@@ -314,6 +356,20 @@ enum ERecordType
 	ERT_TimeInterval,
 	ERT_Shift,
 };
+
+enum ELanguage
+{
+	EL_Chinese  = 0,         //中文
+	EL_English  = 1,         //英文
+};
+
+enum EUISelection
+{
+	EUI_Main,
+	EUI_QueryData,
+	EUI_Settings,
+};
+
 
 #define  SAFE_SET(s,v) {\
     if(s != nullptr)\

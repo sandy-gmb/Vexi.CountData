@@ -40,10 +40,11 @@ bool DataCenter::Init(QString* err)
     DataCenterConf conf;
     GetDataCenterConf(conf);
 
-    m_pimpl->m_db.strategy_mode = conf.bStrategyMode;
-    m_pimpl->m_db.sensorids = conf.lSensorIDs;
-    m_pimpl->m_db.work->eti = (ETimeInterval)conf.iTimeInterval_GeneRecord;
-    m_pimpl->m_db.work->outdatedays = conf.iDaysDataOutDate;
+    m_pimpl->m_db.cfgStrategy = conf.strategy;
+
+    m_pimpl->m_db.work->eti = conf.eTimeInterval;
+	m_pimpl->m_db.work->cfgSystem = conf.syscfg;
+    m_pimpl->m_db.work->shift = conf.ptrShift;
 
     return m_pimpl->m_db.Init(err);
 }

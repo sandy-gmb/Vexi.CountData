@@ -20,18 +20,31 @@
 #include <QList>
 
 #include "DataDef.hpp"
+#include "ConfigDef.hpp"
 
 class DATAVIEW_EXPORT DataView:public QObject
 {
     Q_OBJECT
 public:
-    DataView(int lang, QObject* parent = nullptr);
+    DataView( QObject* parent = nullptr);
     ~DataView();
 
 public slots:
     void Init();
     void show();
+
+	void OnLanguageChange(ELanguage lang);
+	void OnChangeUI(EUISelection sel);
+	void OnRecordConfigChanged();
 signals:
+	/****************  Config **********************************************************/
+	void signals_GetAllConfig(AllConfig& cfg);
+	void signals_SetAllConfig(const AllConfig& cfg);
+	void signals_GetWordsTranslation(const QMap<int, QString>& , const QMap<int, QString>&);
+	int signals_GetTimeInterval();
+
+
+	/****************  DataCenter ******************************************************/
     /**
     * @brief  :  signal_GetDataByTime 获取最新一条记录
     *
@@ -40,23 +53,6 @@ signals:
     * @retval :
     */
     bool signal_GetLastestRecord(int type, Record& data, QString* err);
-
-    /**
-    * @brief  :  GetTimeInterval 获取时间间隔
-    *
-    * @return :  ETimeInterval
-    * @retval :
-    */
-    ETimeInterval signal_GetTimeInterval();
-
-    /**
-    * @brief  :  SetTimeInterval
-    *
-    * @param  :  ETimeInterval timeinterval
-    * @return :  void
-    * @retval :
-    */
-    void signal_SetTimeInterval(ETimeInterval timeinterval);
 
     /**
     * @brief  :  signal_GetAllDate 获取当前记录的日期列表
@@ -76,7 +72,7 @@ signals:
     * @return :  bool
     * @retval :
     */
-    bool signal_GetRecordListByDay(QDate date, QList<QTime>& stlst, QList<QTime>& etlst);
+    bool signal_GetRecordListByDay(int type, QDate date, QList<QTime>& stlst, QList<QTime>& etlst);
      
     /**
     * @brief  :  signal_GetDataByTime 按时间获取数据,相当于设置可设置数据来源,根据链接的不同来源的槽函数
@@ -87,18 +83,21 @@ signals:
     * @return :  bool 可能由于异常原因导致出错(如数据库文件无法打开等)
     * @retval :
     */
-    bool signal_GetRecordByTime(QDateTime st, QDateTime end, Record& data);
+	bool signal_GetRecordByTime(int type, QDateTime st, QDateTime end, Record& data);
 
+
+	/****************  Self Defined ******************************************************/
     void closed();
 
-    //获取词条翻译文件名
-    QString GetWordsTranslationFilePath();
-    //获取软件语言
-    int GetSoftwareLanguage();
 private:
     class Impl;
     
     Impl* pimpl;
+
+	friend class MainUI;
+	friend class QueryWidget;
+	friend class SettingWidget;
+
 };
 
 #endif // DATAVIEW_H
