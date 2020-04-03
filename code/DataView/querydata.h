@@ -41,6 +41,8 @@ public:
 
 		void ChangeLanguage(const QMap<int, QString>& moldwors, const QMap<int, QString>& sensorwors);
 
+protected:
+	void changeEvent(QEvent* event);
 private:
 	DataView* m_pthis;
     Ui::query *ui;

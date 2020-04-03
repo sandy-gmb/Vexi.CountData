@@ -7,10 +7,12 @@
 #include <QDateTime>
 #include <QMap>
 #include <QTime>
+#include <QStringList>
 
 class SensorInfo
 {
 public:
+	int sensorrowid;
     int id;             //缺陷代码
     int rejects;        //系统发出的剔废信号数
     int defects;        //系统收到的实际剔废数
@@ -25,7 +27,8 @@ public:
     }
 
     void MergeData(const SensorInfo& t)
-    {
+	{
+		sensorrowid = t.sensorrowid;
         rejects += t.rejects;
         defects += t.defects;
 		foreach(int k, t.addinginfo.keys())
@@ -46,6 +49,7 @@ public:
 class MoldInfo
 {
 public:
+	int moldrowid;
     int id;             //模号
     int inspected;      //系统过检总数
     int rejects;        //系统发出的剔废信号数
@@ -82,6 +86,7 @@ public:
         {
             t.GenerateSensorIdx();
         }
+		moldrowid = t.moldrowid;
         inspected += t.inspected;
         rejects += t.rejects;
         defects += t.defects;
@@ -105,6 +110,7 @@ public:
 //用于保存传入的XML字符串包含的数据
 class XmlData{
 public:
+	int mainrowid;
     QString id;         //MachineID
     int inspected;      //系统过检总数
     int rejects;        //系统发出的剔废信号数
@@ -147,10 +153,13 @@ public:
         {
             t.GenerateModIdx();
         }
+		mainrowid = t.mainrowid;
         inspected += t.inspected;
         rejects += t.rejects;
         defects += t.defects;
         autorejects += t.autorejects;
+		date = t.date;
+		shift = t.shift;
         //模板合并是对应模板合并
         foreach(int id, t.moldid_idx.keys())
         {
@@ -210,12 +219,12 @@ inline int ETimeInterval2Min(ETimeInterval eti)
 class Shift
 {
 public:
-	Shift(const QList<QString>& tlst)
+	Shift(const QStringList& tlst)
 	{
 		reset(tlst);
 	}
 
-	void reset(const QList<QString>& tlst)
+	void reset(const QStringList& tlst)
 	{
 		shifttime.clear();
 		foreach(QString t, tlst)
@@ -244,9 +253,9 @@ public:
 		}
 	}
 
-	QList<QString> getShiftTimeList()
+	QStringList getShiftTimeList()
 	{
-		QList<QString> tlst;
+		QStringList tlst;
 		foreach(QTime t, shifttime)
 		{
 			tlst.append(t.toString("hh:mm:ss"));
@@ -258,7 +267,7 @@ public:
 	{
 		foreach (QTime t, sorttime)
 		{
-			if(_t.time() <= t)
+			if(_t.time() < t)
 			{
 				return QDateTime(_t.date(), t);
 			}
@@ -269,7 +278,7 @@ public:
 	QDateTime getLastShiftTime(const QDateTime& t){
 		for (int i = sorttime.size() - 1; i >= 0; i--)
 		{
-			if(t.time() > sorttime[i])
+			if(t.time() >= sorttime[i])
 			{
 				return QDateTime(t.date(), sorttime[i]);
 			}
@@ -277,7 +286,7 @@ public:
 		return QDateTime(t.date().addDays(-1), sorttime.last());
 	};
 
-	void getShiftDateShift(const QDateTime& t, QDate& d, int shift)
+	void getShiftDateShift(const QDateTime& t, QDate& d, int& shift)
 	{
 		//如果只会有一个班
 		if(shifttime.size() == 1)
@@ -326,16 +335,16 @@ public:
 	{
 		if(shifttime.size() != l.size())
 		{
-			return false;
+			return true;
 		}
 		for(int i = 0; i < l.size(); i++)
 		{
 			if(shifttime[i] != QTime::fromString(l[i]))
 			{
-				return false;
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 
 	bool operator!=(const Shift& l)const

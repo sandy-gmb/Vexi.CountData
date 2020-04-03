@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>623</width>
+    <width>705</width>
     <height>242</height>
    </rect>
   </property>
@@ -124,21 +124,6 @@
            <property name="verticalScrollBarPolicy">
             <enum>Qt::ScrollBarAlwaysOn</enum>
            </property>
-           <item>
-            <property name="text">
-             <string>1</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>44</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>111</string>
-            </property>
-           </item>
           </widget>
          </item>
         </layout>
@@ -788,43 +773,10 @@
         <property name="verticalScrollBarPolicy">
          <enum>Qt::ScrollBarAlwaysOn</enum>
         </property>
-        <item>
-         <property name="text">
-          <string>23:00:00</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>07:00:00</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>15:00:00</string>
-         </property>
-        </item>
        </widget>
       </item>
      </layout>
     </widget>
-   </item>
-   <item>
-    <spacer name="horizontalSpacer">
-     <property name="font">
-      <font>
-       <pointsize>11</pointsize>
-      </font>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>0</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -914,9 +866,6 @@
     </layout>
    </item>
   </layout>
-  <zorder>groupBox_3</zorder>
-  <zorder>groupBox_5</zorder>
-  <zorder>horizontalSpacer</zorder>
  </widget>
  <resources/>
  <connections/>

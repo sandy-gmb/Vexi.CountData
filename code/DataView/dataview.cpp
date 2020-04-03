@@ -17,9 +17,6 @@ public:
     MainUI* m_mainui;
     SettingWidget* m_settingui; 
 	QueryWidget* m_query;
-
-    QMap<int, QString> m_moldwors;        //模板ID词条
-    QMap<int, QString> m_sensorwors;      //缺陷ID词条
 };
 
 DataView::DataView( QObject* parent)
@@ -30,35 +27,27 @@ DataView::DataView( QObject* parent)
 	pimpl->m_query = new QueryWidget(this);
     pimpl->m_settingui = new SettingWidget(this);
 
-    connect(pimpl->m_mainui, SIGNAL(signal_GetLastestRecord(int, Record& , QString* )), this, SIGNAL(signal_GetLastestRecord(int, Record& , QString* )));
-    connect(pimpl->m_mainui, SIGNAL(signal_GetTimeInterval( )), this, SIGNAL(signal_GetTimeInterval( )));
     connect(pimpl->m_mainui, SIGNAL(closed( )), this, SIGNAL(closed( )));
-    connect(pimpl->m_settingui, SIGNAL(signal_GetAllDate(int, QList<QDate>& )), this, SIGNAL(signal_GetAllDate(int, QList<QDate>& )));
-    connect(pimpl->m_settingui, SIGNAL(signal_GetRecordListByDay(QDate , QList<QTime>& , QList<QTime>& )), this, SIGNAL(signal_GetRecordListByDay(QDate , QList<QTime>& , QList<QTime>& )));
-    connect(pimpl->m_settingui, SIGNAL(signal_GetRecordByTime(QDateTime , QDateTime , Record& )), this, SIGNAL(signal_GetRecordByTime(QDateTime , QDateTime , Record& )));
-    connect(pimpl->m_settingui, SIGNAL(signal_GetTimeInterval()), this, SIGNAL(signal_GetTimeInterval()));
-    connect(pimpl->m_settingui, SIGNAL(signal_SetTimeInterval(ETimeInterval )), this, SIGNAL(signal_SetTimeInterval(ETimeInterval )));
-
 }
 
 DataView::~DataView()
 {
     pimpl->m_settingui->close();
-    pimpl->m_mainui->close();
+	pimpl->m_query->close();
+	pimpl->m_mainui->close();
     delete pimpl;
 }
 
 void DataView::show()
 {
-    pimpl->m_settingui->hide();
-    pimpl->m_mainui->show();
+	OnChangeUI(EUI_Main);
 }
 
-void DataView::OnLanguageChange(ELanguage lang)
+void DataView::OnLanguageChange(int lang)
 {
 	//设置使用的翻译文件
 	QString tsfile = "DataView";
-	if(lang == EL_English){
+	if((ELanguage)lang == EL_English){
 		tsfile += "_en.qm";
 	}else
 	{
@@ -77,10 +66,9 @@ void DataView::OnLanguageChange(ELanguage lang)
 
 	QMap<int, QString> moldwors;
 	QMap<int, QString> sensorwors;
-	signals_GetWordsTranslation(moldwors, sensorwors);
+	signal_GetWordsTranslation(moldwors, sensorwors);
 	pimpl->m_mainui->ChangeLanguage(moldwors, sensorwors);
 	pimpl->m_query->ChangeLanguage(moldwors, sensorwors);
-	pimpl->m_settingui->ChangeLanguage();
 }
 
 
@@ -101,10 +89,7 @@ void DataView::OnChangeUI(EUISelection sel)
 		pimpl->m_settingui->hide();
 		break;
 	case EUI_Settings:
-		AllConfig cfg;
-		signals_GetAllConfig(cfg);
-
-		//pimpl->m_settingui->refreshWidget();
+		pimpl->m_settingui->on_btn_reload_clicked();
 		pimpl->m_settingui->show();
 		pimpl->m_query->hide();
 		pimpl->m_mainui->hide();
@@ -112,14 +97,17 @@ void DataView::OnChangeUI(EUISelection sel)
 	}
 }
 
-void DataView::OnRecordConfigChanged()
+void DataView::OnRecordShowChanged(int show)
 {//更新信息
-
+	pimpl->m_mainui->ChangedShowRecordT((ERecordType)show);
 }
 
 void DataView::Init()
 {
-	pimpl->m_mainui->Init();
+	AllConfig cfg;
+	signal_GetAllConfig(cfg);
+	OnLanguageChange(cfg.syscfg.iLanguage);
+	pimpl->m_mainui->Init((ERecordType)cfg.syscfg.iDefaultShow);
 	pimpl->m_query->Init();
     pimpl->m_settingui->Init();
 }

@@ -13,12 +13,11 @@
 
 MainUI::MainUI(DataView *parent) : 
 	QWidget(nullptr),
-    ui(new Ui::MainUI)
+    ui(new Ui::MainUI),
+	isinit(false)
 {
+	m_pthis = parent;
     ui->setupUi(this);
-	//初始化界面
-	Init();
-	refreshWidget();
 }
 
 MainUI::~MainUI()
@@ -30,11 +29,19 @@ MainUI::~MainUI()
 
 void MainUI::GetData()
 {
+	if(!this->isVisible())
+	{
+		//return;
+	}
     bool rt = false;
-    rt = m_pthis->signal_GetLastestRecord((int)recordtype, record, nullptr);
+	Record r;
+    rt = m_pthis->signal_GetLastestRecord((int)recordtype, r, nullptr);
     if(rt )
     {
-       updated = true; 
+		if(record.dt_end > r.dt_end && record.dt_start > r.dt_start)
+			return;
+		record = r;
+		updated = true; 
     }
 }
 
@@ -63,12 +70,12 @@ void MainUI::updateUI()
     {
 		if(recordtype == ERT_Shift)
 		{
-			ui->l_timeinterval->setText(tr("Shift:%1-%2.").arg(r.shiftDate.toString("yyyy-MM-dd")).arg(r.shift));
+			ui->l_timeinterval->setText(tr("Shift:%1-%2.").arg(r.shiftDate.toString("yyyy.MM.dd")).arg(r.shift));
 		}
 		ui->l_error->setText("");
         ui->ledt_date->setText(r.dt_start.date().toString("yyyy-MM-dd"));
-        ui->ledt_starttime->setText(r.dt_start.time().toString("hh:mm:ss"));
-        ui->ledt_endtime->setText(r.dt_end.time().toString("hh:mm:ss"));
+        ui->ledt_starttime->setText(r.dt_start.time().toString("hh:mm"));
+        ui->ledt_endtime->setText(r.dt_end.time().toString("hh:mm"));
         ui->ledt_total->setText(QString::number(r.inspected));
         ui->ledt_reject->setText(QString::number(r.rejects));
         ui->ledt_rate->setText(QString("%1%").arg(r.rejects/(r.inspected*1.0)*100, 0,'f', 1));
@@ -130,7 +137,7 @@ void MainUI::updateUI()
                 ui->tb_record->setItem( roln_idx[sid], coln_idx[mid], new QTableWidgetItem(QString::number(sensor_rej[sid])));
             }
         }
-		ui->tb_record->horizontalHeader()->setResizeMode(QHeaderView::Stretch); 
+		ui->tb_record->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents); 
     }
 }
 
@@ -140,14 +147,16 @@ void MainUI::UpdateTimeInterval( ETimeInterval ti )
     ui->l_timeinterval->setText(tr("Current Time Interval:%1 Min").arg(eti));
 }
 
-void MainUI::Init()
+void MainUI::Init(ERecordType type)
 {
+	recordtype = type;
     m_timer = new QTimer(this);
 
     connect(m_timer, SIGNAL(timeout()), this, SLOT(GetData()));
     connect(m_timer, SIGNAL(timeout()), this, SLOT(updateUI()));
 
     m_timer->start(2000);
+	isinit = true;
 }
 
 void MainUI::closeEvent( QCloseEvent *event )
@@ -162,19 +171,23 @@ void MainUI::ChangeLanguage(const QMap<int, QString>& moldwors, const QMap<int, 
 {
 	m_moldwors = moldwors;
 	m_sensorwors = sensorwors;
-	ui->retranslateUi(this);
+	//ui->retranslateUi(this);
 }
 
 void MainUI::ChangedShowRecordT(ERecordType type)
 {
-	recordtype = type;
+	if(recordtype != type)
+	{
+		recordtype = type;
+		refreshWidget();
+	}
 }
 
 void MainUI::refreshWidget()
 {
 	if(recordtype == ERT_TimeInterval)
 	{//更新间隔显示,如果配置界面改了,此处更新即可
-		ETimeInterval ti = (ETimeInterval)m_pthis->signals_GetTimeInterval();
+		ETimeInterval ti = (ETimeInterval)m_pthis->signal_GetTimeInterval();
 		if(recordtype == ERT_Shift)
 		{
 			UpdateTimeInterval(ti);
@@ -198,4 +211,17 @@ void MainUI::on_btn_to_query_clicked()
 void MainUI::on_btn_to_settings_clicked()
 {
 	m_pthis->OnChangeUI(EUI_Settings);
+}
+
+void MainUI::changeEvent(QEvent* event) 
+{
+	QWidget::changeEvent(event);
+	switch (event->type()) 
+	{
+	case QEvent::LanguageChange:
+		ui->retranslateUi(this);
+		break;
+	default:
+		break;
+	}
 }

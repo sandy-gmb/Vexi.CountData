@@ -68,6 +68,7 @@ static const QString& create_tb_ShiftMain_SQL = QString("CREATE TABLE IF NOT EXI
 												   Autoreject   INTEGER,\
 												   [TimeStart] DATETIME,\
 												   [TimeEnd]   DATETIME,\
+												   Date VARCHAR,\
 												   Shift   INTEGER );");
 
 enum EOperDatabase

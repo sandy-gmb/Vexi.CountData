@@ -6,6 +6,7 @@
 #include <QTime>
 #include <QSharedPointer>
 #include <QStringList>
+#include <logger.h>
 
 #include "DataDef.hpp"
 
@@ -42,12 +43,13 @@ public:
 		eTimeInterval = (ETimeInterval)sets.value("timeInterval/time_interval", 0).toInt();
 		//∞‡¥Œ
 		size = sets.beginReadArray("shift/shift");
-		QList<QString> shifttime;
+		QStringList shifttime;
 		for(int i = 0; i < size; i++)
 		{
 			sets.setArrayIndex(i);
 			shifttime.append(sets.value("time", "00:00:00").toString()) ;
 		}
+		sets.endArray();
 		if(shifttime.isEmpty())
 		{
 			shifttime.append("00:00:00");
@@ -63,6 +65,7 @@ public:
 		cfgDebug.bSaveSrcData = sets.value("debug/is_save_source_data", false).toBool();
 		cfgDebug.iLogLevel = sets.value("debug/log_level", 2).toInt();
 		sets.sync();
+		ParseTranslationWords();
     }
 
     void Save()
@@ -95,6 +98,7 @@ public:
 			sets.setArrayIndex(i);
 			sets.setValue("time", ptrShift->shifttime[i].toString("hh:mm:ss"));
 		}
+		sets.endArray();
 		//µ˜ ‘≈‰÷√
 		sets.setValue("debug/is_read_source_data", cfgDebug.bReadSrcData);
 		sets.setValue("debug/is_save_source_data", cfgDebug.bSaveSrcData);
@@ -232,6 +236,15 @@ void Config::SetAllConfig(const AllConfig& cfg)
 	bool debug, sys, strategy, timeinterval, shift, show, lang;
 	debug = sys = strategy = timeinterval = shift = show = lang = true;
 	
+	QStringList changelog;
+	changelog <<tr("Configuration Modify:");
+	AllConfig _t;
+	_t.dbgcfg = pimpl->cfgDebug;
+	_t.syscfg = pimpl->cfgSystem;
+	_t.shiftlst = pimpl->ptrShift->getShiftTimeList();
+	_t.eTimeInterval = pimpl->eTimeInterval;
+	_t.strategy = pimpl->cfgStrategy;
+
 	if(cfg.dbgcfg != pimpl->cfgDebug)
 	{
 		pimpl->cfgDebug = cfg.dbgcfg;
@@ -239,11 +252,11 @@ void Config::SetAllConfig(const AllConfig& cfg)
 	}
 	if(cfg.syscfg != pimpl->cfgSystem)
 	{
-		if(cfg.syscfg.iDefaultShow == pimpl->cfgSystem.iDefaultShow)
+		if(cfg.syscfg.iDefaultShow != pimpl->cfgSystem.iDefaultShow)
 		{
 			show = false;
 		}
-		if(cfg.syscfg.iLanguage == pimpl->cfgSystem.iLanguage)
+		if(cfg.syscfg.iLanguage != pimpl->cfgSystem.iLanguage)
 		{
 			lang = false;
 		}
@@ -266,6 +279,12 @@ void Config::SetAllConfig(const AllConfig& cfg)
 		pimpl->eTimeInterval = cfg.eTimeInterval;
 		timeinterval = false;
 	}
+	ELOGI("Configuration Modify %s", qPrintable(_t.changeLog(cfg)));
+
+	if( !debug || !sys || !strategy || !timeinterval || !shift)
+	{
+		pimpl->Save();
+	}
 
 	if(!timeinterval || !shift)
 	{
@@ -278,12 +297,12 @@ void Config::SetAllConfig(const AllConfig& cfg)
 		emit CoreConfChange(cfg);
 	}
 
-	if( !sys || !strategy || !timeinterval || shift)
+	/*if( !sys || !strategy || !timeinterval || !shift)
 	{
 		DataCenterConf cfg;
 		GetDataCenterConf(cfg);
 		emit DataConfChange(cfg);
-	}
+	}*/
 
 	if(!show)
 	{
@@ -292,6 +311,7 @@ void Config::SetAllConfig(const AllConfig& cfg)
 
 	if(!lang)
 	{
+		pimpl->ParseTranslationWords();
 		emit LanguageChanged(cfg.syscfg.iLanguage);
 	}
 	
@@ -302,20 +322,10 @@ int Config::GetConfigLogLevel()
 	return pimpl->cfgDebug.iLogLevel;
 }
 
-void Config::GetWordsTranslation(const QMap<int, QString>& moldwors, const QMap<int, QString>& sensorwors)
+void Config::GetWordsTranslation(QMap<int, QString>& moldwors, QMap<int, QString>& sensorwors)
 {
-	QString lang = "_zh";
-	if(pimpl->cfgSystem.iLanguage == EL_English)
-	{
-		lang = "_en";
-	}
-	QString suffix = ".ini";
-	QString prefix = pimpl->cfgSystem.sCodetsprefix;
-	if(prefix == "")
-	{
-		pimpl->cfgSystem.sCodetsprefix = DefaultWordsFilePrefix;
-	}
-	//return QString("%1/%2%3%4").arg(ConfigDir).arg(prefix).arg(lang).arg(suffix);
+	moldwors = pimpl->moldwors;
+	sensorwors = pimpl->sensorwors;
 }
 
 int Config::GetTimeInterval()

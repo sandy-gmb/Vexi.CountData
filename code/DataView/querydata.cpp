@@ -24,7 +24,7 @@ QueryWidget::~QueryWidget()
 void QueryWidget::on_dateEdit_dateChanged( QDate d )
 {
     curDate = d;
-    signal_GetRecordListByDay(d, stlst, etlst );
+    m_pthis->signal_GetRecordListByDay(recordtype, d, stlst, etlst );
     ui->listWidget->clear();
     QStringList l;
     for (int i = 0; i < stlst.size();i++)
@@ -32,7 +32,7 @@ void QueryWidget::on_dateEdit_dateChanged( QDate d )
         l.append(QString("%1:%2_%3:%4").arg(stlst[i].hour(),2, 10, QChar('0')).arg(stlst[i].minute(),2, 10, QChar('0'))
             .arg( etlst[i].hour(), 2, 10, QChar('0')).arg(etlst[i].minute(), 2, 10, QChar('0')));
     }
-    ui->listWidget->insertItems(0, l);
+	ui->listWidget->addItems(l);
     if(l.size() != 0)
     {
         ui->listWidget->setCurrentRow(l.size()-1);
@@ -50,7 +50,7 @@ void QueryWidget::on_listWidget_currentRowChanged( int row )
     QDateTime st(curDate, stlst[row]);
     QDateTime et(curDate, etlst[row]);
     Record record;
-    signal_GetRecordByTime(st, et, record);
+    m_pthis->signal_GetRecordByTime(recordtype, st, et, record);
 
     SimpleRecord r;
     r.SetRecord(record);
@@ -61,12 +61,24 @@ void QueryWidget::on_listWidget_currentRowChanged( int row )
         ui->tb_record->setRowCount(0);
         ui->tb_record->setColumnCount(0);
         ui->ledt_starttime->setText("");
-        ui->ledt_endtime->setText("");
+		ui->ledt_endtime->setText("");
+		ui->l_error->setText(tr("No Data"));
+		ui->l_error->setStyleSheet("color: rgb(255, 0, 0);font: 11pt \"Times New Roman\";");
     }
     else
     {
-        ui->ledt_starttime->setText(r.dt_start.time().toString("hh:mm:ss"));
-        ui->ledt_endtime->setText(r.dt_end.time().toString("hh:mm:ss"));
+		if(recordtype == ERT_Shift)
+		{
+			ui->l_error->setText(tr("Shift:%1-%2").arg(r.shiftDate.toString("yyyy.MM.dd")).arg(r.shift));
+			ui->l_error->setStyleSheet("color: rgb(0, 0, 0);font: 11pt \"Times New Roman\";");
+		}
+		else
+		{
+			ui->l_error->setText("");
+		}
+
+        ui->ledt_starttime->setText(r.dt_start.time().toString("hh:mm"));
+        ui->ledt_endtime->setText(r.dt_end.time().toString("hh:mm"));
         ui->ledt_total->setText(QString::number(r.inspected));
         ui->ledt_reject->setText(QString::number(r.rejects));
         ui->ledt_rate->setText(QString("%1%").arg(r.rejects/(r.inspected*1.0)*100, 0,'f', 1));
@@ -134,13 +146,20 @@ void QueryWidget::on_listWidget_currentRowChanged( int row )
 
 void QueryWidget::on_rbtn_show_timeinterval_clicked()
 {
-	m_pthis->
+	recordtype = ERT_TimeInterval;
+	on_btn_refresh_clicked();
+}
+
+void QueryWidget::on_rbtn_show_shift_clicked()
+{
+	recordtype = ERT_Shift;
+	on_btn_refresh_clicked();
 }
 
 void QueryWidget::on_btn_refresh_clicked()
 {
     //获取有记录的日期列表,并保存
-    signal_GetAllDate(0, datelst);
+    m_pthis->signal_GetAllDate(recordtype, datelst);
     if(!datelst.isEmpty())
     {
         //设置最新日期为默认日期
@@ -148,67 +167,50 @@ void QueryWidget::on_btn_refresh_clicked()
         ui->dateEdit->setMaximumDate(datelst.last());
         curDate = datelst.last();
 		on_dateEdit_dateChanged(datelst.last());
+		ui->l_error->setText("");
     }
     else
     {
         curDate = QDate::currentDate();
         ui->dateEdit->setMinimumDate(curDate);
         ui->dateEdit->setMaximumDate(curDate);
-        ui->dateEdit->setDate(curDate);
+		ui->dateEdit->setDate(curDate);
+		ui->l_error->setText(tr("No Latest Data"));
+		ui->l_error->setStyleSheet("color: rgb(255, 0, 0);font: 11pt \"Times New Roman\";");
     }
 }
 
-void QueryWidget::on_rbtn_eti_60min_clicked()
+void QueryWidget::on_btn_to_setting_clicked()
 {
-    signal_SetTimeInterval(ETI_60_Min);
-    if(mainui!= nullptr)
-    {
-        ((MainUI*)mainui)->UpdateTimeInterval(ETI_60_Min);
-    }
-}
-
-void QueryWidget::on_rbtn_eti_30min_clicked()
-{
-    signal_SetTimeInterval(ETI_30_Min);
-    if(mainui!= nullptr)
-    {
-        ((MainUI*)mainui)->UpdateTimeInterval(ETI_30_Min);
-    }
-}
-
-void QueryWidget::on_rbtn_eti_90min_clicked()
-{
-    signal_SetTimeInterval(ETI_90_Min);
-    if(mainui!= nullptr)
-    {
-        ((MainUI*)mainui)->UpdateTimeInterval(ETI_90_Min);
-    }
-}
-
-void QueryWidget::on_rbtn_eti_120min_clicked()
-{
-    signal_SetTimeInterval(ETI_120_Min);
-    if(mainui!= nullptr)
-    {
-        ((MainUI*)mainui)->UpdateTimeInterval(ETI_120_Min);
-    }
+	m_pthis->OnChangeUI(EUI_Settings);
 }
 
 void QueryWidget::Init()
 {
-    ui->listWidget->clear();
-    on_btn_refresh_clicked();
+	recordtype = ERT_TimeInterval;
+	ui->rbtn_show_timeinterval->setChecked(true);
 }
 
-void QueryWidget::on_btn_goback_clicked()
+void QueryWidget::on_btn_to_main_clicked()
 {
-    this->hide(); 
-    mainui->show();
+	m_pthis->OnChangeUI(EUI_Main);
 }
 
 void QueryWidget::ChangeLanguage(const QMap<int, QString>& moldwors, const QMap<int, QString>& sensorwors)
 {
 	m_moldwors = moldwors;
 	m_sensorwors = sensorwors;
-	ui->retranslateUi(this);
+}
+
+void QueryWidget::changeEvent(QEvent* event)
+{
+	QWidget::changeEvent(event);
+	switch (event->type()) 
+	{
+	case QEvent::LanguageChange:
+		ui->retranslateUi(this);
+		break;
+	default:
+		break;
+	}
 }

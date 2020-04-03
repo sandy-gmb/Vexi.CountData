@@ -7,19 +7,19 @@
 #include "ConfigDef.hpp"
 
 SettingWidget::SettingWidget(DataView* parent) :
-    QWidget(nullptr),
-    ui(new Ui::setting)
+QWidget(nullptr),
+	ui(new Ui::setting)
 {
-    ui->setupUi(this);
+	ui->setupUi(this);
 	m_pthis = parent;
 
-    setWindowFlags(Qt::FramelessWindowHint);
-    
+	setWindowFlags(Qt::FramelessWindowHint);
+
 }
 
 SettingWidget::~SettingWidget()
 {
-    delete ui;
+	delete ui;
 }
 
 void SettingWidget::Init()
@@ -27,15 +27,10 @@ void SettingWidget::Init()
 	on_btn_reload_clicked();
 }
 
-void SettingWidget::ChangeLanguage()
-{
-	ui->retranslateUi(this);
-}
-
 void SettingWidget::on_btn_reload_clicked()
 {
 	AllConfig _cfg;
-	m_pthis->signals_GetAllConfig(_cfg);
+	m_pthis->signal_GetAllConfig(_cfg);
 	cfg = _cfg;
 	//刷新策略信息
 	ui->cbtn_mode->setChecked(_cfg.strategy.bStrategyMode);
@@ -94,6 +89,9 @@ void SettingWidget::on_btn_save_clicked()
 {
 	AllConfig _cfg;
 	_cfg.strategy = cfg.strategy;
+	_cfg.syscfg.sCodetsprefix = cfg.syscfg.sCodetsprefix;
+	_cfg.dbgcfg = cfg.dbgcfg;
+
 	_cfg.syscfg.iLanguage = ui->cbx_language->currentIndex();
 	_cfg.syscfg.iTimeInterval_GeneRecord = ui->ledt_generate_time_interval->text().toInt();
 	_cfg.syscfg.iTimeInterval_GetSrcData = ui->ledt_get_source_time_interval->text().toInt();
@@ -134,9 +132,9 @@ void SettingWidget::on_btn_save_clicked()
 		_cfg.shiftlst.append(ui->lwgt_shift_time->item(i)->text());
 	}
 
-	if(cfg == _cfg)
+	if(cfg != _cfg)
 	{
-		m_pthis->signals_SetAllConfig(_cfg);
+		m_pthis->signal_SetAllConfig(_cfg);
 		cfg = _cfg;
 	}
 }
@@ -150,7 +148,34 @@ void SettingWidget::on_btn_add_shifttime_clicked()
 	}
 }
 
-void SettingWidget::on_delete_shifttime_clicked()
+void SettingWidget::on_btn_delete_shifttime_clicked()
 {
+	int i = ui->lwgt_shift_time->currentRow();
+	if(i >= 0)
+	{
+		QListWidgetItem* t = ui->lwgt_shift_time->takeItem(i);
+		delete t;
+		if(ui->lwgt_shift_time->count() >= i)
+		{
+			ui->lwgt_shift_time->setCurrentRow(i);
+		}
+		else if(ui->lwgt_shift_time->count() > 0)
+		{
+			ui->lwgt_shift_time->setCurrentRow(i-1);
+		}
+	}
+}
 
+void SettingWidget::changeEvent(QEvent* event)
+{
+	QWidget::changeEvent(event);
+	switch (event->type()) 
+	{
+		case QEvent::LanguageChange:
+			ui->retranslateUi(this);
+			on_btn_reload_clicked();
+			break;
+		default:
+			break;
+	}
 }

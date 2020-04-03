@@ -33,15 +33,15 @@ public slots:
     void Init();
     void show();
 
-	void OnLanguageChange(ELanguage lang);
+	void OnLanguageChange(int lang);
 	void OnChangeUI(EUISelection sel);
-	void OnRecordConfigChanged();
+	void OnRecordShowChanged(int show);
 signals:
 	/****************  Config **********************************************************/
-	void signals_GetAllConfig(AllConfig& cfg);
-	void signals_SetAllConfig(const AllConfig& cfg);
-	void signals_GetWordsTranslation(const QMap<int, QString>& , const QMap<int, QString>&);
-	int signals_GetTimeInterval();
+	void signal_GetAllConfig(AllConfig& cfg);
+	void signal_SetAllConfig(const AllConfig& cfg);
+	void signal_GetWordsTranslation(QMap<int, QString>& , QMap<int, QString>&);
+	int signal_GetTimeInterval();
 
 
 	/****************  DataCenter ******************************************************/

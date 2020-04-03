@@ -174,10 +174,11 @@ DBOperation::DBOperation( QObject* parent /*= nullptr*/ )
 {
 	db = QSharedPointer< QSqlDatabase> (new QSqlDatabase( QSqlDatabase::addDatabase("QSQLITE", "Record"))) ;
 	rtdb = QSharedPointer< QSqlDatabase> (new QSqlDatabase( QSqlDatabase::addDatabase("QSQLITE", "RTRecord"))) ;
-	shiftdb = QSharedPointer< QSqlDatabase> (new QSqlDatabase( QSqlDatabase::addDatabase("QSQLITE", "RTRecord"))) ;
+	shiftdb = QSharedPointer< QSqlDatabase> (new QSqlDatabase( QSqlDatabase::addDatabase("QSQLITE", "ShiftRecord"))) ;
 
     db_mutex = QSharedPointer<QMutex>(new QMutex(QMutex::Recursive));
-    rtdb_mutex = QSharedPointer<QMutex>(new QMutex(QMutex::Recursive));
+	rtdb_mutex = QSharedPointer<QMutex>(new QMutex(QMutex::Recursive));
+	shiftdb_mutex = QSharedPointer<QMutex>(new QMutex(QMutex::Recursive));
 
     work = new GenerateRecord(this);
     thd = new QThread(this);
@@ -228,28 +229,56 @@ bool DBOperation::GetRecordByTime(int type, QDateTime st, QDateTime end, Record&
     
 }
 
+void DBOperation::RecordConfigChanged()
+{
+	QDateTime t = QDateTime::currentDateTime();
+	DeleteRecordAfterTime(EOperDB_TimeIntervalDB, t);
+	DeleteRecordAfterTime(EOperDB_ShiftDB, t);
+}
+
+void DBOperation::OnDataConfChange(const DataCenterConf& cfg)
+{
+	cfgStrategy = cfg.strategy;
+	work->cfgSystem = cfg.syscfg;
+	work->eti = cfg.eTimeInterval;
+}
+
 bool DBOperation::GetLastestRecord(int type, Record& data, QString* err )
 {
 	try
 	{
 		bool res = true;
-		//从原始记录数据库获取大于等于指定时间的对应记录
+		
 		{
-			QMutexLocker lk(db_mutex.data());
-			if(!db->open())
+			QSharedPointer<QSqlDatabase> _db;
+			QSharedPointer<QMutex> _db_mutex;
+			if(!GetRecordDBParams((ERecordType)type, _db, _db_mutex))
 			{
-				SAFE_SET(err, QString(QObject::tr("Open database failure,the erro is %1").arg(db->lastError().text()))) ;
+				return false;
+			}
+
+			QMutexLocker lk(_db_mutex.data());
+			if(!_db->open())
+			{
+				SAFE_SET(err, QString(QObject::tr("Open database failure,the erro is %1").arg(_db->lastError().text()))) ;
+				ELOGD("Open database failure,the erro is %s", qPrintable(_db->lastError().text()));
 				return false;
 			}
 			{//为了关闭连接时 没有query使用
 				//查询主表
 				QString sql = QString("SELECT ID, MachineID, Inspected, Rejects, Defects, Autoreject, TimeStart, TimeEnd \
 									  FROM %1 ORDER BY TimeEnd desc limit 1;").arg(tb_Main);
-				QSqlQuery query(*db);
+				if(type == (int)ERT_Shift)
+				{
+					sql = QString("SELECT ID, MachineID, Inspected, Rejects, Defects, Autoreject, TimeStart, TimeEnd, Date, Shift \
+								  FROM %1 ORDER BY TimeEnd desc limit 1;").arg(tb_Main);
+				}
+				QSqlQuery query(*_db);
 				if(!query.exec(sql) )
 				{
 					SAFE_SET(err, QString(QObject::tr("Query databasefailure,the erro is %1").arg(query.lastError().text()))) ;
-					db->close();
+					ELOGD("Query databasefailure,the erro is %s", qPrintable( query.lastError().text()));
+					_db->close();
 					return false;
 				}
 				if(query.next())
@@ -263,9 +292,16 @@ bool DBOperation::GetLastestRecord(int type, Record& data, QString* err )
 					re.autorejects   = query.value(5).toInt();
 					re.dt_start      = QDateTime::fromString(query.value(6).toString(), "yyyy-MM-dd hh:mm:ss"); 
 					re.dt_end        = QDateTime::fromString(query.value(7).toString(), "yyyy-MM-dd hh:mm:ss"); 
+					if(type == ERT_Shift)
+					{
+						re.date        = QDate::fromString(query.value(8).toString(), "yyyy-MM-dd"); 
+						QString t = re.date.toString();
+						 t = query.value(8).toString();
+						re.shift = query.value(9).toInt();
+					}
 					if(re.inspected > 0)
 					{//过检总数大于0才有其他信息
-						if(!QueryMoldInfoByMainID(db, mainrowid, re.moldinfo, err))
+						if(!QueryMoldInfoByMainID(_db, mainrowid, re.moldinfo, err))
 						{
 							res = false;
 						}
@@ -277,7 +313,7 @@ bool DBOperation::GetLastestRecord(int type, Record& data, QString* err )
 					res = false;
 				}
 			}
-			db->close();
+			_db->close();
 		}
 		return res;
 	}
@@ -321,7 +357,7 @@ bool DBOperation::GetAllDate(int type, QList<QDate>& lst )
 			if(!_db->open())
 			{
 				QString err = QObject::tr("Open databasefailure,the erro is %1").arg(_db->lastError().text()) ;
-				ELOGE(err.toLocal8Bit().constData());
+				ELOGD("Open database failure,the erro is %s", qPrintable(_db->lastError().text()));
 				return false;
 			}
 			{//为了关闭连接时 没有query使用
@@ -442,16 +478,17 @@ bool DBOperation::QueryRecordByTime(EOperDatabase type, QDateTime st, QDateTime 
 		if(!_db->open())
 		{
 			SAFE_SET(err, QString(QObject::tr("Open database failure,the erro is %1").arg(_db->lastError().text()))) ;
+			ELOGD("Open database failure,the erro is %s", qPrintable(_db->lastError().text()));
 			return false;
 		}
 		{//为了关闭连接时 没有query使用 //查询main information
 			QString sql = QString("SELECT ID, MachineID, Inspected, Rejects, Defects, Autoreject, TimeStart, TimeEnd \
-								  FROM %1 WHERE TimeStart >= '%2' and TimeStart < '%3';")
+								  FROM %1 WHERE TimeStart >= '%2' and TimeEnd <= '%3';")
 								  .arg(tb_Main).arg(st.toString("yyyy-MM-dd hh:mm:ss")).arg(et.toString("yyyy-MM-dd hh:mm:ss"));
 			if(type == EOperDB_ShiftDB)
 			{
 				sql = QString("SELECT ID, MachineID, Inspected, Rejects, Defects, Autoreject, TimeStart, TimeEnd, Date, Shift \
-									  FROM %1 WHERE TimeStart >= '%2' and TimeStart < '%3';")
+									  FROM %1 WHERE TimeStart >= '%2' and TimeEnd <= '%3';")
 									  .arg(tb_Main).arg(st.toString("yyyy-MM-dd hh:mm:ss")).arg(et.toString("yyyy-MM-dd hh:mm:ss"));
 			}
 			//查询主表
@@ -463,10 +500,13 @@ bool DBOperation::QueryRecordByTime(EOperDatabase type, QDateTime st, QDateTime 
 				_db->close();
 				return false;
 			}
+			QMap<int, Record> mainrow_record;
+			QMap<int, QList<MoldInfo> > mainrow_moldlst;
+
 			while(query.next())
 			{
 				Record re;
-				int mainrowid    = query.value(0).toInt();
+				re.mainrowid    = query.value(0).toInt();
 				re.id            = query.value(1).toString();
 				re.inspected     = query.value(2).toInt();
 				re.rejects       = query.value(3).toInt();
@@ -476,12 +516,12 @@ bool DBOperation::QueryRecordByTime(EOperDatabase type, QDateTime st, QDateTime 
 				re.dt_end        = QDateTime::fromString(query.value(7).toString(), "yyyy-MM-dd hh:mm:ss"); 
 				if(type == EOperDB_ShiftDB)
 				{
-					re.date = QDate::fromString(query.value(8).toString());
+					re.date = QDate::fromString(query.value(8).toString(), "yyyy-MM-dd");
 					re.shift = query.value(9).toInt();
 				}
 				if(re.inspected > 0)
 				{//过检总数大于0才有其他信息
-					if(!QueryMoldInfoByMainID(_db, mainrowid, re.moldinfo, err))
+					if(!QueryMoldInfoByMainID(_db, re.mainrowid, re.moldinfo, err))
 					{
 						_db->close();
 						return false;
@@ -498,7 +538,7 @@ bool DBOperation::QueryRecordByTime(EOperDatabase type, QDateTime st, QDateTime 
 
 bool DBOperation::QueryMoldInfoByMainID(QSharedPointer<QSqlDatabase> _db, int mainrowid, QList<MoldInfo>& moldinfo, QString* err)
 {
-	QString sql = QString("SELECT ID, MoldID, Inspected, Rejects, Defects, Autoreject FROM %1 WHERE TMainRowID=%2;")
+	QString sql = QString("SELECT ID, MoldID, Inspected, Rejects, Defects, Autoreject FROM %1 WHERE TMainRowID=%2 order by MoldID asc;")
 		.arg(tb_Mold).arg(mainrowid);
 	QSqlQuery mquery(*_db);
 	if(!mquery.exec(sql))
@@ -509,7 +549,7 @@ bool DBOperation::QueryMoldInfoByMainID(QSharedPointer<QSqlDatabase> _db, int ma
 	while(mquery.next())
 	{
 		MoldInfo mold;
-		int moldrowid      = mquery.value(0).toInt();
+		mold.moldrowid      = mquery.value(0).toInt();
 		mold.id            = mquery.value(1).toInt();
 		mold.inspected     = mquery.value(2).toInt();
 		mold.rejects       = mquery.value(3).toInt();
@@ -520,7 +560,7 @@ bool DBOperation::QueryMoldInfoByMainID(QSharedPointer<QSqlDatabase> _db, int ma
 			continue;
 		}
 
-		if(!QuerySensorInfoByMoldID(_db, moldrowid, mold.sensorinfo, err))
+		if(!QuerySensorInfoByMoldID(_db, mold.moldrowid, mold.sensorinfo, err))
 		{
 			return false;
 		}
@@ -545,7 +585,7 @@ bool DBOperation::QuerySensorInfoByMoldID(QSharedPointer<QSqlDatabase> _db, int 
 		while(squery.next())
 		{
 			SensorInfo sensor;
-			int sensorrowid      = squery.value(0).toInt();
+			sensor.sensorrowid      = squery.value(0).toInt();
 			sensor.id            = squery.value(1).toInt();
 			sensor.rejects       = squery.value(2).toInt();
 			sensor.defects       = squery.value(3).toInt();
@@ -553,7 +593,7 @@ bool DBOperation::QuerySensorInfoByMoldID(QSharedPointer<QSqlDatabase> _db, int 
 			{
 				continue;
 			}
-			if(!QuerySensorAddingInfoBySensorID(_db, sensorrowid, sensor.addinginfo, err))
+			if(!QuerySensorAddingInfoBySensorID(_db, sensor.sensorrowid, sensor.addinginfo, err))
 			{
 				return false;
 			}
@@ -609,6 +649,7 @@ bool DBOperation::SaveRecord(EOperDatabase type, const Record& data, QString* er
 			if(!_db->open())
 			{
 				SAFE_SET(err, QString(QObject::tr("open record database failure,the erro is ")+_db->lastError().text())) ;
+				ELOGD("Open database failure,the erro is %s", qPrintable(_db->lastError().text()));
 				return false;
 			}
 
@@ -629,6 +670,13 @@ bool DBOperation::SaveRecord(EOperDatabase type, const Record& data, QString* er
 			QString sql = QString("INSERT INTO %1(MachineID, Inspected, Rejects, Defects, Autoreject, TimeStart, TimeEnd) \
 								  Values('%2', %3, %4, %5, %6, '%7', '%8');").arg(tb_Main).arg(data.id).arg(data.inspected).arg(data.rejects).arg(data.defects)
 								  .arg(data.autorejects).arg(data.dt_start.toString("yyyy-MM-dd hh:mm:ss")).arg(data.dt_end.toString("yyyy-MM-dd hh:mm:ss"));
+			if(type == EOperDB_ShiftDB)
+			{
+				sql = QString("INSERT INTO %1(MachineID, Inspected, Rejects, Defects, Autoreject, TimeStart, TimeEnd, Date, Shift) \
+								  Values('%2', %3, %4, %5, %6, '%7', '%8', '%9',%10);").arg(tb_Main).arg(data.id).arg(data.inspected).arg(data.rejects).arg(data.defects)
+								  .arg(data.autorejects).arg(data.dt_start.toString("yyyy-MM-dd hh:mm:ss")).arg(data.dt_end.toString("yyyy-MM-dd hh:mm:ss"))
+								  .arg(data.date.toString("yyyy-MM-dd")).arg(data.shift);
+			}
 			//保存主表数据，并查询主表对应的ID值
 			if(!query.exec(sql))
 			{
@@ -852,6 +900,7 @@ bool DBOperation::SaveShiftRecord(QSharedPointer<QSqlDatabase> _db, const Record
 		if(!_db->open())
 		{
 			SAFE_SET(err, QString(QObject::tr("open record database failure,the erro is ")+_db->lastError().text())) ;
+			ELOGD("Open database failure,the erro is %s", qPrintable(_db->lastError().text()));
 			return false;
 		}
 
@@ -923,6 +972,7 @@ bool DBOperation::GetLastestRecordEndTime(QSharedPointer<QSqlDatabase> _db, QDat
 	if(!_db->open())
 	{
 		SAFE_SET(err, QString(QObject::tr("Open Record database failure,the erro is %1").arg(_db->lastError().text()))) ;
+		ELOGD("Open database failure,the erro is %s", qPrintable(_db->lastError().text()));
 		return false;
 	}
 	{//为了关闭连接时 没有query使用
@@ -952,6 +1002,7 @@ bool DBOperation::GetOldestRecordStartTime(QSharedPointer<QSqlDatabase> _db, QDa
 	if(!_db->open())
 	{
 		SAFE_SET(err, QString(QObject::tr("Open Record database failure,the erro is %1").arg(_db->lastError().text()))) ;
+		ELOGD("Open database failure,the erro is %s", qPrintable(_db->lastError().text()));
 		return false;
 	}
 	{//为了关闭连接时 没有query使用
@@ -1040,6 +1091,7 @@ void DBOperation::DeleteOutdatedData(int outdatedays)
 		if(!rtdb->open())
 		{
 			ELOGD(QObject::tr("Open RTRecord database failure,the erro is %1").arg(db->lastError().text()).toLocal8Bit().constData());
+			ELOGD("Open database failure,the erro is %s", qPrintable(rtdb->lastError().text()));
 			return ;
 		}
 		{
@@ -1128,6 +1180,7 @@ bool DBOperation::DeleteRecordAfterTime(EOperDatabase type, QDateTime time)
 			if(!isfirst)
 			{
 				ELOGD(QObject::tr("Open record database failure,the erro is %1").arg(_db->lastError().text()).toLocal8Bit().constData());
+				ELOGD("Open database failure,the erro is %s", qPrintable(_db->lastError().text()));
 				isfirst = true;
 			}
 			return false;

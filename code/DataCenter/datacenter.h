@@ -160,6 +160,9 @@ public slots:
     */
     bool GetRecordByTime(int type, QDateTime st, QDateTime end, Record& data);
 
+	void RecordConfigChanged();
+	void OnDataConfChange(const DataCenterConf& cfg);
+
 private:
     class Impl;
 

@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 	QObject::connect(&cfg, SIGNAL(RecordConfigChanged()), &da, SLOT(RecordConfigChanged()));
 	QObject::connect(&cfg, SIGNAL(DataConfChange(const DataCenterConf&)), &da, SLOT(OnDataConfChange(const DataCenterConf&)));
 	QObject::connect(&cfg, SIGNAL(CoreConfChange(const CoreConf&)), &core, SLOT(OnCoreConfChange(const CoreConf&)));
-	QObject::connect(&cfg, SIGNAL(LanguageChanged(int)), &view, SLOT(OnLanguageChanged(int)));
+	QObject::connect(&cfg, SIGNAL(LanguageChanged(int)), &view, SLOT(OnLanguageChange(int)));
 	QObject::connect(&cfg, SIGNAL(RecordShowChanged(int)), &view, SLOT(OnRecordShowChanged(int)));
 
 	QObject::connect(&da, SIGNAL(GetDataCenterConf(DataCenterConf&)), &cfg, SLOT(GetDataCenterConf(DataCenterConf&)));
@@ -114,9 +114,10 @@ int main(int argc, char *argv[])
 	QObject::connect(&core, SIGNAL(signal_GetCoreConf(CoreConf& )), &cfg, SLOT(GetCoreConf(CoreConf& )), Qt::DirectConnection);
 	QObject::connect(&core, SIGNAL(signal_PaserDataToDataBase(const QString& , QString*)), &da, SLOT(PaserDataToDataBase(const QString& , QString*)), Qt::DirectConnection);
 
-	QObject::connect(&view, SIGNAL(signals_GetAllConfig(const AllConfig&)), &cfg, SLOT(GetAllConfig(const AllConfig&)));
-	QObject::connect(&view, SIGNAL(signals_GetWordsTranslation(const QMap<int, QString>& , const QMap<int, QString>&)), &cfg, SLOT(GetWordsTranslation(const QMap<int, QString>& , const QMap<int, QString>&)));
-	QObject::connect(&view, SIGNAL(signals_GetTimeInterval()), &cfg, SLOT(GetTimeInterval()));
+	QObject::connect(&view, SIGNAL(signal_GetAllConfig(AllConfig&)), &cfg, SLOT(GetAllConfig(AllConfig&)));
+	QObject::connect(&view, SIGNAL(signal_GetWordsTranslation(QMap<int, QString>& , QMap<int, QString>&)), &cfg, SLOT(GetWordsTranslation(QMap<int, QString>& , QMap<int, QString>&)));
+	QObject::connect(&view, SIGNAL(signal_GetTimeInterval()), &cfg, SLOT(GetTimeInterval()));
+	QObject::connect(&view, SIGNAL(signal_SetAllConfig(const AllConfig&)), &cfg, SLOT(SetAllConfig(const AllConfig&)));
 
 	QObject::connect(&view, SIGNAL(signal_GetLastestRecord(int , Record& , QString*)), &da, SLOT(GetLastestRecord(int , Record& , QString*)));
 	QObject::connect(&view, SIGNAL(signal_GetAllDate(int , QList<QDate>&)), &da, SLOT(GetAllDate(int , QList<QDate>&)));

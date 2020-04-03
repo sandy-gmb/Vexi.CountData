@@ -10,6 +10,7 @@
 #include <QCloseEvent>
 
 #include "DataDef.hpp"
+#include "ConfigDef.hpp"
     
 namespace Ui {
 class setting;
@@ -27,14 +28,15 @@ public:
     void Init();
 
 public slots:
-		void ChangeLanguage();
-
 		void on_btn_reload_clicked();
 		void on_btn_to_query_clicked();
 		void on_btn_to_main_clicked();
 		void on_btn_save_clicked();
 		void on_btn_add_shifttime_clicked();
-		void on_delete_shifttime_clicked();
+		void on_btn_delete_shifttime_clicked();
+
+protected:
+	void changeEvent(QEvent* event);
 private:
 	DataView* m_pthis;
     Ui::setting *ui;

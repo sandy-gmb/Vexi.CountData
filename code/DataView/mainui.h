@@ -20,7 +20,7 @@ public:
     explicit MainUI(DataView* parent);
     ~MainUI();
 
-    void Init();
+    void Init(ERecordType type);
     public slots:
         void GetData();
         void updateUI();
@@ -35,6 +35,9 @@ public:
 
 		void on_btn_to_query_clicked();
 		void on_btn_to_settings_clicked();
+
+protected:
+		void changeEvent(QEvent* event);
 signals:
     void closed();
 
@@ -52,7 +55,7 @@ private:
 
 	QMap<int, QString> m_moldwors;        //ƒ£∞ÂID¥ Ãı
 	QMap<int, QString> m_sensorwors;      //»±œ›ID¥ Ãı
-
+	bool isinit;
 };
 
 #endif // MAINUI_H

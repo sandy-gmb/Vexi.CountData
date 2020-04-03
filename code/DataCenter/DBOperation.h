@@ -103,6 +103,9 @@ public:
     * @retval :
     */
     bool GetRecordByTime(int type, QDateTime st, QDateTime end, Record& data);
+
+	void RecordConfigChanged();
+	void OnDataConfChange(const DataCenterConf& cfg);
 signals:
     void sig_start();
 private:

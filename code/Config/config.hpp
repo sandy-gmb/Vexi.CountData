@@ -74,7 +74,7 @@ public slots:
     * @param QString> & sensorwors
     * @return:   void
     */
-    void GetWordsTranslation(const QMap<int, QString>& moldwors, const QMap<int, QString>& sensorwors);
+    void GetWordsTranslation(QMap<int, QString>& moldwors, QMap<int, QString>& sensorwors);
 	/**
 	* @brief GetTimeInterval
 	*

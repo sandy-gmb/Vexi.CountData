@@ -58,7 +58,7 @@ bool GenerateRecord::processGenerTimeIntervalRecord()
 		if(timelst.isEmpty())
 		{
 			m_pthis->DeleteRecordAfterTime( EOperDB_TimeIntervalDB, QDateTime::currentDateTime());
-			continue;
+			break;
 		}
 		if(!runflg){
 			break;
@@ -130,6 +130,7 @@ bool GenerateRecord::processGenerateShiftRecord()
 		if(!runflg){
 			break;
 		}
+		t = timelst.first();
 		QDateTime et = timelst.last();
 
 		//3 检查时间和时间间隔 查看是否有最新记录需要生成
@@ -186,6 +187,11 @@ void GenerateRecord::CalcGenerateRecordTime(QDateTime start, ETimeInterval eti, 
 
 		lst.push_back(st);
 		st = st.addSecs(ti*60);
+		if(lst.size() >= 5)
+		{
+			lst.append(st);
+			return;
+		}
 	}
 
 	if(!lst.isEmpty())
@@ -233,7 +239,7 @@ bool GenerateRecord::StatisticsRecord(QList<QDateTime>& tlst, QList<Record>& lst
 		}
 		if(isshiftrecord)
 		{
-			shift->getShiftDateShift(r.dt_start.addSecs(10), r.date, r.shift);
+			shift->getShiftDateShift(r.dt_start, r.date, r.shift);
 		}
 		newlst.push_back(r);
 		if(j == lst.size())
@@ -249,12 +255,23 @@ void GenerateRecord::CalcGenerateShiftRecordTime(QDateTime start, QList<QDateTim
 	start = shift->getLastShiftTime(start);
 	QDateTime t = QDateTime::currentDateTime();
 	t = shift->getNextShiftTime(t);
-
+	QStringList tttt;
 	//根据班次起始时间和班次定义 截止时间是当前班次的截止时间点 计算所有需要查询记录的时间
-	while(start <= t )
+	while(start < t )
 	{
+		tttt.append(start.toString());
 		lst.append(start);
 		start = shift->getNextShiftTime(start);
+
+		if(lst.size() >= 2)
+		{
+			lst.append(start);
+			return;
+		}
+	}
+	if(!lst.isEmpty())
+	{
+		lst.append(t);
 	}
 }
 
