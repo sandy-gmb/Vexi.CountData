@@ -80,23 +80,12 @@ bool DataCenter::GetLastestRecord(int type,  Record& data, QString* err )
     return m_pimpl->m_db.GetLastestRecord(type, data, err);
 }
 
-ETimeInterval DataCenter::GetTimeInterval()
-{
-    return m_pimpl->m_db.GetTimeInterval();
-}
-
-void DataCenter::SetTimeInterval( ETimeInterval timeinterval )
-{
-    SetGenerateRecordTimeInterval((int)timeinterval);
-    return m_pimpl->m_db.SetTimeInterval(timeinterval);
-}
-
 bool DataCenter::GetAllDate(int type,  QList<QDate>& lst )
 {
     return m_pimpl->m_db.GetAllDate(type, lst);
 }
 
-bool DataCenter::GetRecordListByDay(int type,  QDate date, QList<QTime>& stlst, QList<QTime>& etlst )
+bool DataCenter::GetRecordListByDay(int type,  QDate date, QList<QDateTime>& stlst, QList<QDateTime>& etlst )
 {
     return m_pimpl->m_db.GetRecordTimeListByDay(type, date, stlst, etlst);
 }
@@ -105,16 +94,16 @@ bool DataCenter::GetRecordByTime(int type,  QDateTime st, QDateTime end, Record&
 {
     return m_pimpl->m_db.GetRecordByTime(type, st, end, data);
 }
-
-void DataCenter::RecordConfigChanged()
-{
-	m_pimpl->m_db.RecordConfigChanged();
-}
-
-void DataCenter::OnDataConfChange(const DataCenterConf& cfg)
-{
-	m_pimpl->m_db.OnDataConfChange(cfg);
-}
+//
+//void DataCenter::RecordConfigChanged()
+//{
+//	m_pimpl->m_db.RecordConfigChanged();
+//}
+//
+//void DataCenter::OnDataConfChange(const DataCenterConf& cfg)
+//{
+//	m_pimpl->m_db.OnDataConfChange(cfg);
+//}
 
 void DataCenter::Stop()
 {

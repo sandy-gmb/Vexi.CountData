@@ -49,8 +49,8 @@ private:
 
     QList<QDate> datelst;		//数据库存在的日期类型
     QDate curDate;				//当前显示的日期
-    QList<QTime> stlst;			//当前日期的时间段起始时间列表
-	QList<QTime> etlst;			//当前日期的时间段结束时间列表
+    QList<QDateTime> stlst;			//当前日期的时间段起始时间列表
+	QList<QDateTime> etlst;			//当前日期的时间段结束时间列表
 	ERecordType recordtype;		//当前显示记录类型
 
     QMap<int, QString> m_moldwors;        //模板ID词条

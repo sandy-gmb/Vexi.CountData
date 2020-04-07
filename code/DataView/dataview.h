@@ -72,7 +72,7 @@ signals:
     * @return :  bool
     * @retval :
     */
-    bool signal_GetRecordListByDay(int type, QDate date, QList<QTime>& stlst, QList<QTime>& etlst);
+    bool signal_GetRecordListByDay(int type, QDate date, QList<QDateTime>& stlst, QList<QDateTime>& etlst);
      
     /**
     * @brief  :  signal_GetDataByTime 按时间获取数据,相当于设置可设置数据来源,根据链接的不同来源的槽函数

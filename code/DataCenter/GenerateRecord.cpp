@@ -88,6 +88,10 @@ bool GenerateRecord::processGenerTimeIntervalRecord()
 		//5 生成记录
 		res = m_pthis->SaveRecordList(EOperDB_TimeIntervalDB, statistic_record_lst, &err);
 
+		if(timelst.size() == 5)
+		{
+			continue;
+		}
 	} while (false);
 	return res;
 }
@@ -155,7 +159,10 @@ bool GenerateRecord::processGenerateShiftRecord()
 		}
 		//5 生成记录
 		res = m_pthis->SaveRecordList( EOperDB_ShiftDB, statistic_record_lst, &err);
-
+		if(timelst.size() == 5)
+		{
+			continue;
+		}
 	} while (false);
 	return res;
 }
@@ -189,8 +196,8 @@ void GenerateRecord::CalcGenerateRecordTime(QDateTime start, ETimeInterval eti, 
 		st = st.addSecs(ti*60);
 		if(lst.size() >= 5)
 		{
-			lst.append(st);
-			return;
+		lst.append(st);
+		return;
 		}
 	}
 
@@ -263,7 +270,7 @@ void GenerateRecord::CalcGenerateShiftRecordTime(QDateTime start, QList<QDateTim
 		lst.append(start);
 		start = shift->getNextShiftTime(start);
 
-		if(lst.size() >= 2)
+		if(lst.size() >= 5)
 		{
 			lst.append(start);
 			return;

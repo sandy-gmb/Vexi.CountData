@@ -29,26 +29,22 @@ void QueryWidget::on_dateEdit_dateChanged( QDate d )
     QStringList l;
     for (int i = 0; i < stlst.size();i++)
     {
-        l.append(QString("%1:%2_%3:%4").arg(stlst[i].hour(),2, 10, QChar('0')).arg(stlst[i].minute(),2, 10, QChar('0'))
-            .arg( etlst[i].hour(), 2, 10, QChar('0')).arg(etlst[i].minute(), 2, 10, QChar('0')));
+        l.append(QString("%1:%2_%3:%4").arg(stlst[i].time().hour(),2, 10, QChar('0')).arg(stlst[i].time().minute(),2, 10, QChar('0'))
+            .arg( etlst[i].time().hour(), 2, 10, QChar('0')).arg(etlst[i].time().minute(), 2, 10, QChar('0')));
     }
 	ui->listWidget->addItems(l);
-    if(l.size() != 0)
-    {
-        ui->listWidget->setCurrentRow(l.size()-1);
-    }
-    else{
-        ui->tb_record->setColumnCount(0);
-        ui->tb_record->setRowCount(0);
-    }
+	if(!l.isEmpty())
+	{
+		ui->listWidget->setCurrentRow(0);
+	}
 }   
 
 void QueryWidget::on_listWidget_currentRowChanged( int row )
 {
     if(row == -1)
         return;
-    QDateTime st(curDate, stlst[row]);
-    QDateTime et(curDate, etlst[row]);
+    QDateTime st = stlst[row];
+    QDateTime et = etlst[row];
     Record record;
     m_pthis->signal_GetRecordByTime(recordtype, st, et, record);
 
@@ -140,7 +136,7 @@ void QueryWidget::on_listWidget_currentRowChanged( int row )
                 ui->tb_record->setItem( roln_idx[sid], coln_idx[mid], new QTableWidgetItem(QString::number(sensor_rej[sid])));
             }
 		}
-		ui->tb_record->horizontalHeader()->setResizeMode(QHeaderView::Stretch); 
+		ui->tb_record->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents); 
     }
 }
 
@@ -164,10 +160,11 @@ void QueryWidget::on_btn_refresh_clicked()
     {
         //设置最新日期为默认日期
         ui->dateEdit->setMinimumDate(datelst.first());
-        ui->dateEdit->setMaximumDate(datelst.last());
-        curDate = datelst.last();
-		on_dateEdit_dateChanged(datelst.last());
+		ui->dateEdit->setMaximumDate(datelst.last());
 		ui->l_error->setText("");
+        curDate = datelst.first();
+		ui->dateEdit->setDate(curDate);
+		//ui->listWidget->setCurrentRow(0);
     }
     else
     {

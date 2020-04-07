@@ -1,4 +1,4 @@
-#include "DBOperation.h"
+#include "DBOperation_Recur.h"
 #include "DataDef.hpp"
 #include "DBOperDef.hpp"
 
@@ -23,13 +23,13 @@
 
 #include <QMutexLocker>
 
-bool DBOperation::SaveData(const XmlData& data, QString* err)
+bool DBOperation_Recur::SaveData(const XmlData& data, QString* err)
 {
-	try
-	{
+    try
+    {
 		QMutexLocker lk(rtdb_mutex.data());
 		return SaveRecord(EOperDB_RuntimeDB, data, err);
-	}
+    }
 	catch (std::exception& e)
 	{
 		ELOGE("Save Data To Database exception:%s", e.what());
@@ -38,21 +38,21 @@ bool DBOperation::SaveData(const XmlData& data, QString* err)
 	{
 	}
 	return false;
-
+    
 }
 
-DBOperation::DBOperation( QObject* parent /*= nullptr*/ )
-	: DBOperationB(parent)
+
+DBOperation_Recur::DBOperation_Recur( QObject* parent /*= nullptr*/ )
+    : DBOperationB(parent)
 {
-
+	
 }
 
-DBOperation::~DBOperation()
+DBOperation_Recur::~DBOperation_Recur()
 {
-
 }
 
-bool DBOperation::GetRecordByTime(int type, QDateTime st, QDateTime end, Record& data )
+bool DBOperation_Recur::GetRecordByTime(int type, QDateTime st, QDateTime end, Record& data )
 {
 	try
 	{
@@ -84,15 +84,29 @@ bool DBOperation::GetRecordByTime(int type, QDateTime st, QDateTime end, Record&
 	{
 	}
 	return false;
-
+    
 }
+//
+//void DBOperation_Recur::RecordConfigChanged()
+//{
+//	QDateTime t = QDateTime::currentDateTime();
+//	DeleteRecordAfterTime(EOperDB_TimeIntervalDB, t);
+//	DeleteRecordAfterTime(EOperDB_ShiftDB, t);
+//}
+//
+//void DBOperation_Recur::OnDataConfChange(const DataCenterConf& cfg)
+//{
+//	cfgStrategy = cfg.strategy;
+//	work->cfgSystem = cfg.syscfg;
+//	work->eti = cfg.eTimeInterval;
+//}
 
-bool DBOperation::GetLastestRecord(int type, Record& data, QString* err )
+bool DBOperation_Recur::GetLastestRecord(int type, Record& data, QString* err )
 {
 	try
 	{
 		bool res = true;
-
+		
 		{
 			QSharedPointer<QSqlDatabase> _db;
 			QSharedPointer<QMutex> _db_mutex;
@@ -108,10 +122,8 @@ bool DBOperation::GetLastestRecord(int type, Record& data, QString* err )
 				ELOGD("Open database failure,the erro is %s", qPrintable(_db->lastError().text()));
 				return false;
 			}
-
-			bool res = true;
-			do 
-			{//为了关闭连接时 没有query使用 //查询main information
+			{//为了关闭连接时 没有query使用
+				//查询主表
 				QString sql = QString("SELECT ID, MachineID, Inspected, Rejects, Defects, Autoreject, TimeStart, TimeEnd \
 									  FROM %1 ORDER BY TimeEnd desc limit 1;").arg(tb_Main);
 				if(type == (int)ERT_Shift)
@@ -119,82 +131,48 @@ bool DBOperation::GetLastestRecord(int type, Record& data, QString* err )
 					sql = QString("SELECT ID, MachineID, Inspected, Rejects, Defects, Autoreject, TimeStart, TimeEnd, Date, Shift \
 								  FROM %1 ORDER BY TimeEnd desc limit 1;").arg(tb_Main);
 				}
-				//查询主表
-
 				QSqlQuery query(*_db);
 				if(!query.exec(sql) )
 				{
-					SAFE_SET(err, QString(QObject::tr("Query RTRecord database failure,the erro is %1").arg(query.lastError().text()))) ;
-					res = false;
-					break;
+					SAFE_SET(err, QString(QObject::tr("Query databasefailure,the erro is %1").arg(query.lastError().text()))) ;
+					ELOGD("Query databasefailure,the erro is %s", qPrintable( query.lastError().text()));
+					_db->close();
+					return false;
 				}
-				QMap<int, Record> mainrow_record;
-				QMap<int, QList<MoldInfo> > mainrow_moldlst;
-				QMap<int, QList<SensorInfo> > moldrow_sensorlst;
-				QMap<int, QMap<int, int> > sensorrow_adding;
-
-				QSet<int> mainrowidlst, moldrowidlst, sensorrowidlst;
-
 				if(query.next())
 				{
-					data.mainrowid    = query.value(0).toInt();
-					data.id            = query.value(1).toString();
-					data.inspected     = query.value(2).toInt();
-					data.rejects       = query.value(3).toInt();
-					data.defects       = query.value(4).toInt();
-					data.autorejects   = query.value(5).toInt();
-					data.dt_start      = QDateTime::fromString(query.value(6).toString(), "yyyy-MM-dd hh:mm:ss"); 
-					data.dt_end        = QDateTime::fromString(query.value(7).toString(), "yyyy-MM-dd hh:mm:ss"); 
-					if(type == EOperDB_ShiftDB)
+					Record re;
+					int mainrowid    = query.value(0).toInt();
+					re.id            = query.value(1).toString();
+					re.inspected     = query.value(2).toInt();
+					re.rejects       = query.value(3).toInt();
+					re.defects       = query.value(4).toInt();
+					re.autorejects   = query.value(5).toInt();
+					re.dt_start      = QDateTime::fromString(query.value(6).toString(), "yyyy-MM-dd hh:mm:ss"); 
+					re.dt_end        = QDateTime::fromString(query.value(7).toString(), "yyyy-MM-dd hh:mm:ss"); 
+					if(type == ERT_Shift)
 					{
-						data.date = QDate::fromString(query.value(8).toString(), "yyyy-MM-dd");
-						data.shift = query.value(9).toInt();
+						re.date        = QDate::fromString(query.value(8).toString(), "yyyy-MM-dd"); 
+						QString t = re.date.toString();
+						 t = query.value(8).toString();
+						re.shift = query.value(9).toInt();
 					}
-					if(data.inspected <= 0)
+					if(re.inspected > 0)
 					{//过检总数大于0才有其他信息
-						continue;
-					}
-				}
-
-				if(!QueryMoldInfoByMainID(_db, mainrowidlst, mainrow_moldlst, moldrowidlst, err))
-				{
-					res = false;
-					break;
-				}
-				if(!QuerySensorInfoByMoldID(_db, moldrowidlst, moldrow_sensorlst, sensorrowidlst, err))
-				{
-					res = false;
-					break;
-				}
-				if(!QuerySensorAddingInfoBySensorID(_db, sensorrowidlst, sensorrow_adding, err))
-				{
-					res = false;
-					break;
-				}
-				if(mainrow_moldlst.contains(data.mainrowid))
-				{
-					data.moldinfo = mainrow_moldlst[data.mainrowid];
-					QList<MoldInfo>& m = data.moldinfo;
-					for(int j = 0; j < m.size(); j++)
-					{
-						if(moldrow_sensorlst.contains(m[j].moldrowid))
+						if(!QueryMoldInfoByMainID(_db, mainrowid, re.moldinfo, err))
 						{
-							m[j].sensorinfo = moldrow_sensorlst[m[j].moldrowid];
-							QList<SensorInfo>& slst = m[j].sensorinfo;
-							for(int k = 0; k < slst.size(); k++)
-							{
-								if(sensorrow_adding.contains(slst[k].sensorrowid))
-								{
-									slst[k].addinginfo = sensorrow_adding[slst[k].sensorrowid];
-								}
-							}
+							res = false;
 						}
 					}
+					data = re;
 				}
-			}while(false);
+				else
+				{
+					res = false;
+				}
+			}
 			_db->close();
 		}
-
 		return res;
 	}
 	catch (std::exception& e)
@@ -205,10 +183,10 @@ bool DBOperation::GetLastestRecord(int type, Record& data, QString* err )
 	{
 	}
 	return false;
-
+    
 }
 
-bool DBOperation::QueryRecordByTime(EOperDatabase type, QDateTime st, QDateTime et,QList<Record>& lst, QString* err)
+bool DBOperation_Recur::QueryRecordByTime(EOperDatabase type, QDateTime st, QDateTime et,QList<Record>& lst, QString* err)
 {
 	//从原始记录数据库获取大于等于指定时间的对应记录
 	{
@@ -225,8 +203,6 @@ bool DBOperation::QueryRecordByTime(EOperDatabase type, QDateTime st, QDateTime 
 			ELOGD("Open database failure,the erro is %s", qPrintable(_db->lastError().text()));
 			return false;
 		}
-		bool res = true;
-		do 
 		{//为了关闭连接时 没有query使用 //查询main information
 			QString sql = QString("SELECT ID, MachineID, Inspected, Rejects, Defects, Autoreject, TimeStart, TimeEnd \
 								  FROM %1 WHERE TimeStart >= '%2' and TimeEnd <= '%3';")
@@ -234,24 +210,20 @@ bool DBOperation::QueryRecordByTime(EOperDatabase type, QDateTime st, QDateTime 
 			if(type == EOperDB_ShiftDB)
 			{
 				sql = QString("SELECT ID, MachineID, Inspected, Rejects, Defects, Autoreject, TimeStart, TimeEnd, Date, Shift \
-							  FROM %1 WHERE TimeStart >= '%2' and TimeEnd <= '%3';")
-							  .arg(tb_Main).arg(st.toString("yyyy-MM-dd hh:mm:ss")).arg(et.toString("yyyy-MM-dd hh:mm:ss"));
+									  FROM %1 WHERE TimeStart >= '%2' and TimeEnd <= '%3';")
+									  .arg(tb_Main).arg(st.toString("yyyy-MM-dd hh:mm:ss")).arg(et.toString("yyyy-MM-dd hh:mm:ss"));
 			}
 			//查询主表
-
+			
 			QSqlQuery query(*_db);
 			if(!query.exec(sql) )
 			{
 				SAFE_SET(err, QString(QObject::tr("Query RTRecord database failure,the erro is %1").arg(query.lastError().text()))) ;
-				res = false;
-				break;
+				_db->close();
+				return false;
 			}
 			QMap<int, Record> mainrow_record;
 			QMap<int, QList<MoldInfo> > mainrow_moldlst;
-			QMap<int, QList<SensorInfo> > moldrow_sensorlst;
-			QMap<int, QMap<int, int> > sensorrow_adding;
-
-			QSet<int> mainrowidlst, moldrowidlst, sensorrowidlst;
 
 			while(query.next())
 			{
@@ -269,82 +241,27 @@ bool DBOperation::QueryRecordByTime(EOperDatabase type, QDateTime st, QDateTime 
 					re.date = QDate::fromString(query.value(8).toString(), "yyyy-MM-dd");
 					re.shift = query.value(9).toInt();
 				}
-				if(re.inspected <= 0)
+				if(re.inspected > 0)
 				{//过检总数大于0才有其他信息
-					continue;
-				}
-				mainrowidlst.insert(re.mainrowid);
-				lst.push_back(re);
-			}
-			if(!mainrowidlst.isEmpty())
-			{
-				if(!QueryMoldInfoByMainID(_db, mainrowidlst, mainrow_moldlst, moldrowidlst, err))
-				{
-					res = false;
-					break;
-				}
-			}
-			if(!moldrowidlst.isEmpty())
-			{
-				if(!QuerySensorInfoByMoldID(_db, moldrowidlst, moldrow_sensorlst, sensorrowidlst, err))
-				{
-					res = false;
-					break;
-				}
-			}
-			if(!sensorrowidlst.isEmpty())
-			{
-				if(!QuerySensorAddingInfoBySensorID(_db, sensorrowidlst, sensorrow_adding, err))
-				{
-					res = false;
-					break;
-				}
-			}
-			
-			for(int i = 0; i < lst.size(); i++)
-			{
-				if(mainrow_moldlst.contains(lst[i].mainrowid))
-				{
-					lst[i].moldinfo = mainrow_moldlst[lst[i].mainrowid];
-					QList<MoldInfo>& m = lst[i].moldinfo;
-					for(int j = 0; j < m.size(); j++)
+					if(!QueryMoldInfoByMainID(_db, re.mainrowid, re.moldinfo, err))
 					{
-						if(moldrow_sensorlst.contains(m[j].moldrowid))
-						{
-							m[j].sensorinfo = moldrow_sensorlst[m[j].moldrowid];
-							QList<SensorInfo>& slst = m[j].sensorinfo;
-							for(int k = 0; k < slst.size(); k++)
-							{
-								if(sensorrow_adding.contains(slst[k].sensorrowid))
-								{
-									slst[k].addinginfo = sensorrow_adding[slst[k].sensorrowid];
-								}
-							}
-						}
+						_db->close();
+						return false;
 					}
 				}
+				lst.push_back(re);
 			}
-		}while(false);
+		}
 		_db->close();
-		return res;
 	}
+
+	return true;
 }
 
-bool DBOperation::QueryMoldInfoByMainID(QSharedPointer<QSqlDatabase> _db,  const QSet<int>& mainrowidlst, QMap<int, QList<MoldInfo> > & moldinfo, QSet<int>& moldrowidlst, QString* err)
+bool DBOperation_Recur::QueryMoldInfoByMainID(QSharedPointer<QSqlDatabase> _db, int mainrowid, QList<MoldInfo>& moldinfo, QString* err)
 {
-	QString rowlst = "";
-	foreach(int id, mainrowidlst)
-	{
-		rowlst += QString("%1,").arg(id);
-	}
-	if(rowlst == "")
-		return false;
-	else
-	{
-		rowlst = rowlst.left(rowlst.size() -1);
-	}
-	QString sql = QString("SELECT ID, MoldID, Inspected, Rejects, Defects, Autoreject, TMainRowID FROM %1 WHERE TMainRowID in(%2);")
-		.arg(tb_Mold).arg(rowlst);
+	QString sql = QString("SELECT ID, MoldID, Inspected, Rejects, Defects, Autoreject FROM %1 WHERE TMainRowID=%2 order by MoldID asc;")
+		.arg(tb_Mold).arg(mainrowid);
 	QSqlQuery mquery(*_db);
 	if(!mquery.exec(sql))
 	{//查询失败
@@ -353,7 +270,6 @@ bool DBOperation::QueryMoldInfoByMainID(QSharedPointer<QSqlDatabase> _db,  const
 	}
 	while(mquery.next())
 	{
-		int mainrowid = -1;
 		MoldInfo mold;
 		mold.moldrowid      = mquery.value(0).toInt();
 		mold.id            = mquery.value(1).toInt();
@@ -361,46 +277,26 @@ bool DBOperation::QueryMoldInfoByMainID(QSharedPointer<QSqlDatabase> _db,  const
 		mold.rejects       = mquery.value(3).toInt();
 		mold.defects       = mquery.value(4).toInt();
 		mold.autorejects   = mquery.value(5).toInt();
-		mainrowid		= mquery.value(6).toInt();
-
 		if(mold.inspected <= 0)
 		{
 			continue;
 		}
 
-		moldrowidlst.insert(mold.moldrowid);
+		if(!QuerySensorInfoByMoldID(_db, mold.moldrowid, mold.sensorinfo, err))
+		{
+			return false;
+		}
 
-		if(moldinfo.contains(mainrowid))
-		{
-			moldinfo[mainrowid].append(mold);
-		}
-		else
-		{
-			QList<MoldInfo> t;
-			t.append(mold);
-			moldinfo.insert(mainrowid, t);
-		}
+		moldinfo.push_back(mold);
 	}
 	return true;
 }
 
-bool DBOperation::QuerySensorInfoByMoldID(QSharedPointer<QSqlDatabase> _db,  const QSet<int>& moldrowidlst,QMap<int, QList<SensorInfo> >&  sensorinfo, QSet<int>& sensorrowidlst, QString* err)
+bool DBOperation_Recur::QuerySensorInfoByMoldID(QSharedPointer<QSqlDatabase> _db, int moldrowid, QList<SensorInfo>& sensorinfo, QString* err)
 {
 	{//查询sensor信息
-		QString rowlst = "";
-		foreach(int id, moldrowidlst)
-		{
-			rowlst += QString("%1,").arg(id);
-		}
-		if(rowlst == "")
-			return false;
-		else
-		{
-			rowlst = rowlst.left(rowlst.size() -1);
-		}
-
-		QString sql = QString("SELECT ID, SensorID, Rejects, Defects, TMoldRowID FROM %1 WHERE TMoldRowID in (%2);")   
-			.arg(tb_Sensor).arg(rowlst);
+		QString sql = QString("SELECT ID, SensorID, Rejects, Defects FROM %1 WHERE TMoldRowID=%2")   
+			.arg(tb_Sensor).arg(moldrowid);
 		//ELOGD(qPrintable(sql));
 		QSqlQuery squery(*_db);
 		if(!squery.exec(sql))
@@ -415,46 +311,26 @@ bool DBOperation::QuerySensorInfoByMoldID(QSharedPointer<QSqlDatabase> _db,  con
 			sensor.id            = squery.value(1).toInt();
 			sensor.rejects       = squery.value(2).toInt();
 			sensor.defects       = squery.value(3).toInt();
-			int moldrowid        = squery.value(4).toInt();
 			if(sensor.rejects <= 0)
 			{
 				continue;
 			}
-
-			sensorrowidlst.insert(sensor.sensorrowid);
-
-			if(sensorinfo.contains(moldrowid))
+			if(!QuerySensorAddingInfoBySensorID(_db, sensor.sensorrowid, sensor.addinginfo, err))
 			{
-				sensorinfo[moldrowid].append(sensor);
+				return false;
 			}
-			else
-			{
-				QList<SensorInfo> t;
-				t.append(sensor);
-				sensorinfo.insert(moldrowid, t);
-			}
+
+			sensorinfo.push_back(sensor);
 		}
 	}
 	return true;
 }
 
-bool DBOperation::QuerySensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> _db, const QSet<int>& sensorrowidlst, QMap<int, QMap<int, int> >& addinginfo, QString* err)
+bool DBOperation_Recur::QuerySensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> _db, int sensorrowid, QMap<int, int>& addinginfo, QString* err)
 {
 	{//查询sensoradd信息
-		QString rowlst = "";
-		foreach(int id, sensorrowidlst)
-		{
-			rowlst += QString("%1,").arg(id);
-		}
-		if(rowlst == "")
-			return false;
-		else
-		{
-			rowlst = rowlst.left(rowlst.size() -1);
-		}
-
-		QString sql = QString("SELECT ID, CounterID, Nb,TSensorRowID FROM %1 WHERE TSensorRowID in(%2);")   
-			.arg(tb_SensorAdd).arg(rowlst);
+		QString sql = QString("SELECT ID, CounterID, Nb FROM %1 WHERE TSensorRowID=%2")   
+			.arg(tb_SensorAdd).arg(sensorrowid);
 		//ELOGD(qPrintable(sql));
 		QSqlQuery aquery(*_db);
 		if(!aquery.exec(sql))
@@ -467,24 +343,14 @@ bool DBOperation::QuerySensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> _
 			int counter_id, nb;
 			counter_id    = aquery.value(1).toInt();
 			nb            = aquery.value(2).toInt();
-			int sensorrowid = aquery.value(3).toInt();
 
-			if(addinginfo.contains(sensorrowid))
-			{
-				addinginfo[sensorrowid].insert(counter_id, nb);
-			}
-			else
-			{
-				QMap<int, int> t;
-				t.insert(counter_id, nb);
-				addinginfo.insert(sensorrowid, t);
-			}
+			addinginfo.insert(counter_id, nb);
 		}
 	}
 	return true;
 }
 
-bool DBOperation::SaveRecord(EOperDatabase type, const Record& data, QString* err, bool isoutdb)
+bool DBOperation_Recur::SaveRecord(EOperDatabase type, const Record& data, QString* err, bool isoutdb)
 {
 	if(data.inspected == 0)
 	{//如果数据为0 不保存
@@ -529,9 +395,9 @@ bool DBOperation::SaveRecord(EOperDatabase type, const Record& data, QString* er
 			if(type == EOperDB_ShiftDB)
 			{
 				sql = QString("INSERT INTO %1(MachineID, Inspected, Rejects, Defects, Autoreject, TimeStart, TimeEnd, Date, Shift) \
-							  Values('%2', %3, %4, %5, %6, '%7', '%8', '%9',%10);").arg(tb_Main).arg(data.id).arg(data.inspected).arg(data.rejects).arg(data.defects)
-							  .arg(data.autorejects).arg(data.dt_start.toString("yyyy-MM-dd hh:mm:ss")).arg(data.dt_end.toString("yyyy-MM-dd hh:mm:ss"))
-							  .arg(data.date.toString("yyyy-MM-dd")).arg(data.shift);
+								  Values('%2', %3, %4, %5, %6, '%7', '%8', '%9',%10);").arg(tb_Main).arg(data.id).arg(data.inspected).arg(data.rejects).arg(data.defects)
+								  .arg(data.autorejects).arg(data.dt_start.toString("yyyy-MM-dd hh:mm:ss")).arg(data.dt_end.toString("yyyy-MM-dd hh:mm:ss"))
+								  .arg(data.date.toString("yyyy-MM-dd")).arg(data.shift);
 			}
 			//保存主表数据，并查询主表对应的ID值
 			if(!query.exec(sql))
@@ -577,9 +443,10 @@ bool DBOperation::SaveRecord(EOperDatabase type, const Record& data, QString* er
 
 		return true;
 	}
-
+	
 }
-bool DBOperation::SaveMoldInfoByMainID(QSharedPointer<QSqlDatabase> _db, int mainrowid, const QList<MoldInfo>& moldinfo, QString* err)
+
+bool DBOperation_Recur::SaveMoldInfoByMainID(QSharedPointer<QSqlDatabase> _db, int mainrowid, const QList<MoldInfo>& moldinfo, QString* err)
 {
 	bool res = true;
 	QSqlQuery query(*_db);
@@ -591,8 +458,8 @@ bool DBOperation::SaveMoldInfoByMainID(QSharedPointer<QSqlDatabase> _db, int mai
 		}
 		//循环保存每个模板信息数据，并查询每个模板对应的ID值
 		QString sql = QString("INSERT INTO %1(TMainRowID, MoldID, Inspected, Rejects, Defects, Autoreject) \
-							  VALUES(%2, %3, %4, %5, %6, %7);").arg(tb_Mold).arg(mainrowid).arg(mold.id)
-							  .arg(mold.inspected).arg(mold.rejects).arg(mold.defects).arg(mold.autorejects);
+					  VALUES(%2, %3, %4, %5, %6, %7);").arg(tb_Mold).arg(mainrowid).arg(mold.id)
+					  .arg(mold.inspected).arg(mold.rejects).arg(mold.defects).arg(mold.autorejects);
 		if(!query.exec(sql))
 		{
 			SAFE_SET(err, QString(QObject::tr("Save Mold Data Error, the Error is ")+query.lastError().text())) ;
@@ -622,7 +489,8 @@ bool DBOperation::SaveMoldInfoByMainID(QSharedPointer<QSqlDatabase> _db, int mai
 	}
 	return res;
 }
-bool DBOperation::SaveSensorInfoByMoldID(QSharedPointer<QSqlDatabase> _db, int moldrowid, const QList<SensorInfo>& sensorinfo, QString* err)
+
+bool DBOperation_Recur::SaveSensorInfoByMoldID(QSharedPointer<QSqlDatabase> _db, int moldrowid, const QList<SensorInfo>& sensorinfo, QString* err)
 {
 	bool res = true;
 	QSqlQuery query(*_db);
@@ -668,7 +536,8 @@ bool DBOperation::SaveSensorInfoByMoldID(QSharedPointer<QSqlDatabase> _db, int m
 	}
 	return res;
 }
-bool DBOperation::SaveSensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> _db, int sensorrowid, const QMap<int, int>& addinginfo, QString* err)
+
+bool DBOperation_Recur::SaveSensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> _db, int sensorrowid, const QMap<int, int>& addinginfo, QString* err)
 {
 	bool res = true;
 	QSqlQuery query(*_db);
@@ -687,7 +556,7 @@ bool DBOperation::SaveSensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> _d
 	return res;
 }
 
-bool DBOperation::SaveShiftRecord(QSharedPointer<QSqlDatabase> _db, const Record& re, QString* err, bool isoutdb /*= false*/)
+bool DBOperation_Recur::SaveShiftRecord(QSharedPointer<QSqlDatabase> _db, const Record& re, QString* err, bool isoutdb /*= false*/)
 {
 	if(re.inspected == 0)
 	{//如果数据为0 不保存
@@ -767,7 +636,7 @@ bool DBOperation::SaveShiftRecord(QSharedPointer<QSqlDatabase> _db, const Record
 	return true;
 }
 
-bool DBOperation::SaveRecordList(EOperDatabase type, QList<Record>& newlst, QString* err)
+bool DBOperation_Recur::SaveRecordList(EOperDatabase type, QList<Record>& newlst, QString* err)
 {
 	{
 		QSharedPointer<QSqlDatabase> _db;

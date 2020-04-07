@@ -103,8 +103,8 @@ int main(int argc, char *argv[])
 
 	DataView view;
 
-	QObject::connect(&cfg, SIGNAL(RecordConfigChanged()), &da, SLOT(RecordConfigChanged()));
-	QObject::connect(&cfg, SIGNAL(DataConfChange(const DataCenterConf&)), &da, SLOT(OnDataConfChange(const DataCenterConf&)));
+	//QObject::connect(&cfg, SIGNAL(RecordConfigChanged()), &da, SLOT(RecordConfigChanged()));
+	//QObject::connect(&cfg, SIGNAL(DataConfChange(const DataCenterConf&)), &da, SLOT(OnDataConfChange(const DataCenterConf&)));
 	QObject::connect(&cfg, SIGNAL(CoreConfChange(const CoreConf&)), &core, SLOT(OnCoreConfChange(const CoreConf&)));
 	QObject::connect(&cfg, SIGNAL(LanguageChanged(int)), &view, SLOT(OnLanguageChange(int)));
 	QObject::connect(&cfg, SIGNAL(RecordShowChanged(int)), &view, SLOT(OnRecordShowChanged(int)));
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
 
 	QObject::connect(&view, SIGNAL(signal_GetLastestRecord(int , Record& , QString*)), &da, SLOT(GetLastestRecord(int , Record& , QString*)));
 	QObject::connect(&view, SIGNAL(signal_GetAllDate(int , QList<QDate>&)), &da, SLOT(GetAllDate(int , QList<QDate>&)));
-	QObject::connect(&view, SIGNAL(signal_GetRecordListByDay(int, QDate , QList<QTime>& , QList<QTime>&)), &da, SLOT(GetRecordListByDay(int, QDate , QList<QTime>& , QList<QTime>&)));
+	QObject::connect(&view, SIGNAL(signal_GetRecordListByDay(int, QDate , QList<QDateTime>& , QList<QDateTime>&)), &da, SLOT(GetRecordListByDay(int, QDate , QList<QDateTime>& , QList<QDateTime>&)));
 	QObject::connect(&view, SIGNAL(signal_GetRecordByTime(int, QDateTime , QDateTime , Record&)), &da, SLOT(GetRecordByTime(int, QDateTime , QDateTime , Record&)));
 	QObject::connect(&view, SIGNAL(closed()), &core, SLOT(stop()), Qt::QueuedConnection);
 	QObject::connect(&view, SIGNAL(closed()), &da, SLOT(Stop()));

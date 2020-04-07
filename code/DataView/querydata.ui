@@ -221,7 +221,7 @@
          <widget class="QDateEdit" name="dateEdit">
           <property name="maximumSize">
            <size>
-            <width>100</width>
+            <width>115</width>
             <height>16777215</height>
            </size>
           </property>
@@ -249,7 +249,7 @@
          <widget class="QListWidget" name="listWidget">
           <property name="maximumSize">
            <size>
-            <width>100</width>
+            <width>115</width>
             <height>16777215</height>
            </size>
           </property>
@@ -257,6 +257,9 @@
            <font>
             <pointsize>11</pointsize>
            </font>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
           </property>
           <item>
            <property name="text">

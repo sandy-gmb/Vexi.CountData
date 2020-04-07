@@ -111,12 +111,8 @@ public:
 		QSettings sets(QString("%1/%2").arg(ConfigDir).arg(ConfigFile),QSettings::IniFormat);
         sets.setIniCodec(QTextCodec::codecForName("UTF-8"));
         //策略相关配置
-        sets.setValue("strategy/mode", true);
-		sets.beginWriteArray("strategy/sensorids", 2);
-		sets.setArrayIndex(0);
-		sets.setValue("id", 10);
-		sets.setArrayIndex(1);
-		sets.setValue("id", 34);
+        sets.setValue("strategy/mode", false);
+		sets.beginWriteArray("strategy/sensorids", 0);
         sets.endArray();
 
 		//系统配置

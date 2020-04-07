@@ -113,23 +113,6 @@ public slots:
     bool GetLastestRecord(int type, Record& data, QString* err);
 
     /**
-    * @brief  :  GetTimeInterval 获取时间间隔
-    *
-    * @return :  ETimeInterval
-    * @retval :
-    */
-    ETimeInterval GetTimeInterval();
-
-    /**
-    * @brief  :  SetTimeInterval
-    *
-    * @param  :  ETimeInterval timeinterval
-    * @return :  void
-    * @retval :
-    */
-    void SetTimeInterval(ETimeInterval timeinterval);
-
-    /**
     * @brief  :  signal_GetAllDate 获取当前记录的日期列表
     *
     * @param  :  QList<QDate> & lst
@@ -147,7 +130,7 @@ public slots:
     * @return :  bool
     * @retval :
     */
-    bool GetRecordListByDay(int type, QDate date, QList<QTime>& stlst, QList<QTime>& etlst);
+    bool GetRecordListByDay(int type, QDate date, QList<QDateTime>& stlst, QList<QDateTime>& etlst);
      
     /**
     * @brief  :  signal_GetDataByTime 按时间获取数据,相当于设置可设置数据来源,根据链接的不同来源的槽函数
@@ -160,8 +143,8 @@ public slots:
     */
     bool GetRecordByTime(int type, QDateTime st, QDateTime end, Record& data);
 
-	void RecordConfigChanged();
-	void OnDataConfChange(const DataCenterConf& cfg);
+	//void RecordConfigChanged();
+	//void OnDataConfChange(const DataCenterConf& cfg);
 
 private:
     class Impl;
