@@ -125,9 +125,9 @@ private:
     bool Init(QSharedPointer<QSqlDatabase> _db, QString filelname, QString* err = nullptr, bool isclassdb = false);
 
 	bool QueryRecordByTime(EOperDatabase type, QDateTime st, QDateTime et,QList<Record>& lst, QString* err);
-	bool QueryMoldInfoByMainID(QSharedPointer<QSqlDatabase> db, int mainrowid, QList<MoldInfo>& moldinfo, QString* err);
-	bool QuerySensorInfoByMoldID(QSharedPointer<QSqlDatabase> db, int moldid, QList<SensorInfo>& sensorinfo, QString* err);
-	bool QuerySensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> db, int sensorid, QMap<int, int>& addinginfo, QString* err);
+	bool QueryMoldInfoByMainID(QSharedPointer<QSqlDatabase> db, const QList<int>& mainrowidlst,QMap<int, QList<MoldInfo> >& moldinfo, QList<int>& moldrowidlst, , QString* err);
+	bool QuerySensorInfoByMoldID(QSharedPointer<QSqlDatabase> db,  const QList<int>& moldrowidlst,QMap<int, QList<SensorInfo> >&  sensorinfo, QList<int>& sensorrowidlst, , QString* err);
+	bool QuerySensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> db,  const QList<int>& sensorrowidlst, QMap<int, QList<int, int> >& addinginfo, QString* err);
 
 	bool SaveRecord(EOperDatabase type, const Record& lst, QString* err, bool isoutdb = false);
 	bool SaveMoldInfoByMainID(QSharedPointer<QSqlDatabase> db, int mainrowid, const QList<MoldInfo>& moldinfo, QString* err);
