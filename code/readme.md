@@ -74,15 +74,33 @@ log_level=2
 ```
 ## time Interval
 1. timeInterval.time_interval:生成记录数据的时间间隔,
-*    0:30分钟,
-*    1:60分钟,
-*    2:90分钟
-*    3:120分钟
+    * 0:30分钟,
+    * 1:60分钟,
+    * 2:90分钟
+    * 3:120分钟
 
 ## shift
-shift数组定义班次个数和每个班次切换时间点.
+1. shift数组定义班次个数和每个班次切换时间点.
 
 ## debug
 1. debug.isreadsrcdata:实时数据来源是否使用源数据文件(运行目录下的srcdata.txt),true表示使用，如果文件不存在则依然使用webservice通信
 2. debug.issavesrcdata:是否保存通信数据到源数据文件（数据来源是数据文件，则不会保存）
 3. debug.loglevel:日志信息的输出最低级别 0:Trace, 1:Debug, 2:Info, 3:Error, 4:Alarm, 5:Fatal
+
+
+# ChangeLog
+## date: 2020-4-8
+* Version: 1.0.0.2
+* Note:
+    1. 增加按班次统计记录;
+    2. 拆分副界面:拆分为查询界面和配置界面;
+    3. 关键配置例如调试配置和策略配置,不提供界面配置,策略配置可以在界面显示
+    4. 数据中心由于使用SQLite,修改了查询功能,使效率能更快;
+
+## date: 2019-12-09
+* Version:1.0.0.1
+* Note:
+    1. 此版本为默认版本号,文件不附带版本信息;
+    2. 使用WebService从联合检验机获取数据;
+    3. 界面提供可设置的按时间间隔生成统计记录;
+    4. readme提供配置文件设置说明 界面只提供时间间隔配置

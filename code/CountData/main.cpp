@@ -14,9 +14,12 @@
 
 #include <QTextCodec>
 
+#include "fileVersion.h"
+
 
 #ifdef WIN32
 #include <io.h>		// windows
+#include <WinVer.h>
 #include <Windows.h>
 #pragma warning(disable:4091)
 #include <DbgHelp.h>
@@ -24,7 +27,6 @@
 #include <unistd.h>		// linux
 #endif
 #pragma comment(lib,"dbghelp.lib")    // dump
-
 
 using namespace std;
 
@@ -75,7 +77,6 @@ static LONG WINAPI pfnUnhandledExceptionFilter(PEXCEPTION_POINTERS pExceptionInf
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
-
 using namespace std;
 int main(int argc, char *argv[])
 {
@@ -84,11 +85,22 @@ int main(int argc, char *argv[])
 	QTextCodec::setCodecForTr(code);
 	QTextCodec::setCodecForLocale(code);
 	QTextCodec::setCodecForCStrings(code);
-
 	QApplication::setLibraryPaths(QStringList(QString(QCoreApplication::applicationDirPath()+"/QtPlugins/")));
 
 	//ELOGGER->SetLogLevel(EasyLog::LOG_TRACE); 
 	ELOGGER->SetPrint2StdOut(false);
+
+	CFileVersion fv;
+	QString title = "";
+	if(fv.Init(a.applicationFilePath()))
+	{
+		ELOGI("Program Name:%s", qPrintable(fv.GetProductName())); 
+		ELOGI("Company Name:%s", qPrintable(fv.GetCompanyName())); 
+		ELOGI("Program Version:%s", qPrintable(fv.GetFixedProductVersion())); 
+		ELOGI("File Version:%s", qPrintable(fv.GetFixedFileVersion())); 
+
+		title = QString("%1_%2").arg(fv.GetProductName()).arg(fv.GetFixedProductVersion());
+	}
 
 	ELOGI( "Program Starting...");
 
@@ -132,10 +144,10 @@ int main(int argc, char *argv[])
 		system("pause");
 		return 1;
 	}
-
-	view.Init();
+	view.Init(title);
 
 	core.start();
+	
 	view.show();
 
 	return a.exec();

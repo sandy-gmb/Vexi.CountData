@@ -30,7 +30,7 @@ public:
     ~DataView();
 
 public slots:
-    void Init();
+    void Init(QString title = "");
     void show();
 
 	void OnLanguageChange(int lang);

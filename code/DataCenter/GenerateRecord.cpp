@@ -26,6 +26,8 @@
 #include <QMutexLocker>
 #include <QDebug>
 
+const int iEveryTimeMaxDuration = 5;
+
 bool GenerateRecord::processGenerTimeIntervalRecord()
 {
 	/***************************************************************************************************
@@ -88,7 +90,7 @@ bool GenerateRecord::processGenerTimeIntervalRecord()
 		//5 生成记录
 		res = m_pthis->SaveRecordList(EOperDB_TimeIntervalDB, statistic_record_lst, &err);
 
-		if(timelst.size() == 5)
+		if(timelst.size() == iEveryTimeMaxDuration)
 		{
 			continue;
 		}
@@ -159,7 +161,7 @@ bool GenerateRecord::processGenerateShiftRecord()
 		}
 		//5 生成记录
 		res = m_pthis->SaveRecordList( EOperDB_ShiftDB, statistic_record_lst, &err);
-		if(timelst.size() == 5)
+		if(timelst.size() == iEveryTimeMaxDuration)
 		{
 			continue;
 		}
@@ -194,7 +196,7 @@ void GenerateRecord::CalcGenerateRecordTime(QDateTime start, ETimeInterval eti, 
 
 		lst.push_back(st);
 		st = st.addSecs(ti*60);
-		if(lst.size() >= 5)
+		if(lst.size() >= iEveryTimeMaxDuration)
 		{
 		lst.append(st);
 		return;
@@ -270,7 +272,7 @@ void GenerateRecord::CalcGenerateShiftRecordTime(QDateTime start, QList<QDateTim
 		lst.append(start);
 		start = shift->getNextShiftTime(start);
 
-		if(lst.size() >= 5)
+		if(lst.size() >= iEveryTimeMaxDuration)
 		{
 			lst.append(start);
 			return;

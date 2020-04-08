@@ -90,6 +90,9 @@
     <ClInclude Include="GeneratedFiles\ui_querydata.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="dataview.h">
@@ -122,5 +125,8 @@
     <None Include="DataView_zh.ts">
       <Filter>Translation Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DataView.rc" />
   </ItemGroup>
 </Project>

@@ -102,12 +102,23 @@ void DataView::OnRecordShowChanged(int show)
 	pimpl->m_mainui->ChangedShowRecordT((ERecordType)show);
 }
 
-void DataView::Init()
+void DataView::Init(QString title)
 {
 	AllConfig cfg;
 	signal_GetAllConfig(cfg);
 	OnLanguageChange(cfg.syscfg.iLanguage);
-	pimpl->m_mainui->Init((ERecordType)cfg.syscfg.iDefaultShow);
+	if(title != "")
+	{
+		pimpl->m_mainui->Init((ERecordType)cfg.syscfg.iDefaultShow, title);
+	}
+	else
+	{
+		pimpl->m_mainui->Init((ERecordType)cfg.syscfg.iDefaultShow);
+	}
 	pimpl->m_query->Init();
-    pimpl->m_settingui->Init();
+	pimpl->m_settingui->Init();
+	if(title != "")
+	{
+		pimpl->m_mainui->setWindowTitle(title);
+	}
 }

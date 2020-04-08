@@ -20,7 +20,7 @@ public:
     explicit MainUI(DataView* parent);
     ~MainUI();
 
-    void Init(ERecordType type);
+    void Init(ERecordType type, QString title = "");
     public slots:
         void GetData();
         void updateUI();
@@ -56,6 +56,8 @@ private:
 	QMap<int, QString> m_moldwors;        //ƒ£∞ÂID¥ Ãı
 	QMap<int, QString> m_sensorwors;      //»±œ›ID¥ Ãı
 	bool isinit;
+
+	QString strTitle;
 };
 
 #endif // MAINUI_H

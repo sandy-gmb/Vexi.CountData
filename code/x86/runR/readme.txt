@@ -32,14 +32,14 @@ is_read_source_data=false
 is_save_source_data=false
 log_level=2
 ```
-
+ 
 如上所示为配置示例, 以下为各项配置说明:
 ## 过滤缺陷信息策略
 1. strategy.mode: 缺陷代码命中模式:
 * true表示白名单模式,意思是此模式下方的sensorids里的缺陷ID会被保存;
 * false表示黑名单模式,意思是此模式下方的sensorids里的缺陷ID不会被保存
-
 2. sensorids数组为模式命中的ID列表,可参考上示例
+
 ## 系统配置
 1. system.time_interval_generate_record:刷新记录数据的时间间隔 单位秒,
 2. system.time_interval_get_src_data:刷新原始数据的时间间隔(通过webservice获取数据的时间间隔) 单位秒
@@ -74,13 +74,13 @@ log_level=2
 ```
 ## time Interval
 1. timeInterval.time_interval:生成记录数据的时间间隔,
-*    0:30分钟,
-*    1:60分钟,
-*    2:90分钟
-*    3:120分钟
+    * 0:30分钟,
+    * 1:60分钟,
+    * 2:90分钟
+    * 3:120分钟
 
 ## shift
-shift数组定义班次个数和每个班次切换时间点.
+1. shift数组定义班次个数和每个班次切换时间点.
 
 ## debug
 1. debug.isreadsrcdata:实时数据来源是否使用源数据文件(运行目录下的srcdata.txt),true表示使用，如果文件不存在则依然使用webservice通信

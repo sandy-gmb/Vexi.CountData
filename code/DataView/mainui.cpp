@@ -147,8 +147,9 @@ void MainUI::UpdateTimeInterval( ETimeInterval ti )
     ui->l_timeinterval->setText(tr("Current Time Interval:%1 Min").arg(eti));
 }
 
-void MainUI::Init(ERecordType type)
+void MainUI::Init(ERecordType type, QString title)
 {
+	strTitle = title;
 	recordtype = type;
     m_timer = new QTimer(this);
 
@@ -220,6 +221,10 @@ void MainUI::changeEvent(QEvent* event)
 	{
 	case QEvent::LanguageChange:
 		ui->retranslateUi(this);
+		if(strTitle != "")
+		{
+			setWindowTitle(strTitle);	
+		}
 		break;
 	default:
 		break;
