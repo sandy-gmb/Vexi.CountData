@@ -1,11 +1,20 @@
-/*
- * Easylog.h
- *
- *  Created on: 2018Äê12ÔÂ7ÈÕ
- *      Author: Administrator
- *      Ö§³Ö·ÇC++11,Ö§³ÖÈÕÖ¾¼¶±ğ£¬Ö§³ÖÁ÷Ê½ÈÕÖ¾,Ö§³Öprintf£¬²»ĞèÒª¶¨Òå£¬Ö»ĞèÒª°üº¬Í·ÎÄ¼ş
- *      ¸ĞĞ»Ô­×÷Õßsollyu
- *      by zhushuo
+ï»¿/***************************************************************************************************************
+ * Copyright Â© 2020 Guo.Mingbing. All rights reserved.
+ * @file Easylog.h
+ * @detail æ—¥å¿—åº“ Guo.MingbingåŸºäºZhuShuoçš„EasyLogåŸºç¡€ä¸Šä¿®æ”¹,æœ€ç»ˆå¾—åˆ°å½“å‰ç‰ˆæœ¬
+ *  åŸåœ°å€:https://github.com/zhushuo1992/Easylog.git
+ *  æ”¯æŒä»¥ä¸‹ç‰¹æ€§:
+ *      1. æ”¯æŒæ—¥å¿—çº§åˆ«;
+ *      2. æ”¯æŒæµå¼æ—¥å¿—;
+ *      3. æ”¯æŒprintf;
+ *      4. æ”¯æŒå®šä¹‰æ–‡ä»¶å¤§å°,æ–‡ä»¶è¶…è¿‡å¤§å°åè‡ªåŠ¨åˆ‡æ¢æ–°æ–‡ä»¶ Guo.Mingbing å¢åŠ 
+ *      5. æ”¯æŒè®¾ç½®æ—¥å¿—è¿‡æœŸæ—¶é—´ (Reserve æš‚æœªå®ç°)
+ *      6. æœ€åå°è£…æˆåŠ¨æ€åº“,ä¸å†æ˜¯åŸæ¥çš„ä¸€ä¸ªå¤´æ–‡ä»¶
+ * @Note:Info çº§åˆ«ä¸ä¼šæ‰“å°æ–‡ä»¶å è¡Œå· å‡½æ•°åç­‰ä¿¡æ¯
+
+ * @Date:2020-4-9 
+ * @Version:1.0
+ * @Author Guo.Mingbing
  */
 
 #ifndef EASYLOG_H_
@@ -13,32 +22,6 @@
 
 #pragma once
 
-//
-//  EasyLog.h
-//
-//  Created by sollyu on 14/11/20.
-//  Copyright (c) 2014Äê sollyu. All rights reserved.
-//
-
-/**
-	#include <iostream>
-	#include "Easylog.h"
-
-	ELOGI("i'm %s", "zhushuo");          // Êä³ö INFO (Ö»ÓĞ LOGI ²»»á´òÓ¡ËùÔÚĞĞ)
-	ELOGE("I'm " << "sollyu");          // Êä³ö ERROR (»á´òÓ¡ËùÔÚĞĞ)
-	ELOG_DEBUG("i'm %s", "sollyu");     // Êä³ö DEBUG (»á´òÓ¡ËùÔÚĞĞ)
-	EasyLog::GetInstance()->WriteLog(EasyLog::LOG_DEBUG, "i'm %s", "sollyu");
-
- // ÉÏÃæ´úÂëµÄÖ´ĞĞ½á¹û
-[2018.12.09] [19:48:41] [LOG_INFO ] ------------------ LOG SYSTEM START ------------------
-
-[2018.12.09] [19:48:41] [LOG_INFO ] i'm zhushuo
-[2018.12.09] [19:48:41] [LOG_ERROR] I'm sollyu (..\src\Easylog.cpp : main : 16 )
-[2018.12.09] [19:48:41] [LOG_DEBUG] i'm sollyu (..\src\Easylog.cpp : main : 17 )
-[2018.12.09] [19:48:41] [LOG_DEBUG] i'm sollyu
-
- */
- 
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -50,34 +33,33 @@
 
 
 #ifndef EASY_LOG_FILE_NAME
-#  define EASY_LOG_FILE_NAME			"normal.txt"   /** ÈÕÖ¾µÄÎÄ¼şÃû £¬ Èç¹û²»ÒÔÓÃÈÕÆÚÎÄ¼ş¼Ğ±£´æÄ¿Â¼,ÔòÊ¹ÓÃ´ËÃû*/
+#  define EASY_LOG_FILE_NAME			"normal.txt"   /** æ—¥å¿—çš„æ–‡ä»¶å ï¼Œ å¦‚æœä¸ä»¥ç”¨æ—¥æœŸæ–‡ä»¶å¤¹ä¿å­˜ç›®å½•,åˆ™ä½¿ç”¨æ­¤å*/
 #endif
 
 #ifndef EASY_LOG_FILE_NAME_DATE
-#  define EASY_LOG_FILE_NAME_DATE		1            /** 1±íÊ¾Ê¹ÓÃÈÕÆÚ×÷ÎªÎÄ¼şÃû */
+#  define EASY_LOG_FILE_NAME_DATE		1            /** 1è¡¨ç¤ºä½¿ç”¨æ—¥æœŸä½œä¸ºæ–‡ä»¶å */
 #endif
 
 #ifndef EASY_LOG_LINE_BUFF_SIZE
-#  define EASY_LOG_LINE_BUFF_SIZE		1024            /** Ò»ĞĞµÄ×î´ó»º³å */
+#  define EASY_LOG_LINE_BUFF_SIZE		1024            /** ä¸€è¡Œçš„æœ€å¤§ç¼“å†² */
 #endif
 
 #ifndef EASY_LOG_DISABLE_LOG
-#  define EASY_LOG_DISABLE_LOG          0               /** ·Ç0±íÊ¾½ûÓÃLOG */
+#  define EASY_LOG_DISABLE_LOG          0               /** é0è¡¨ç¤ºç¦ç”¨LOG */
 #endif
 
 
 #ifndef EASY_LOG_COVER_LOG
-#  define EASY_LOG_COVER_LOG          1               /** ·Ç0±íÊ¾×·¼ÓĞ´,¸²¸ÇĞ´ÔòÊ¹ÓÃÈÕÆÚ×÷ÎªÎÄ¼şÃû,Í¬Ò»¸öÈÕÆÚÖ»ÓĞÒ»¸öÎÄ¼ş */
+#  define EASY_LOG_COVER_LOG          1               /** é0è¡¨ç¤ºè¿½åŠ å†™,è¦†ç›–å†™åˆ™ä½¿ç”¨æ—¥æœŸä½œä¸ºæ–‡ä»¶å,åŒä¸€ä¸ªæ—¥æœŸåªæœ‰ä¸€ä¸ªæ–‡ä»¶ */
 #endif
-
 
 #ifdef WIN32
 #else
 #   define  sprintf_s   sprintf
-#   define  vsnprintf_s vsnprintf//´Ë´¦ÒòÎªÎÒÓÃµÄÊÇmingw£¬Ö±½ÓÓÃÁËvsnprintf£¬Çë×ÔĞĞÅĞ¶Ï
+#   define  vsnprintf_s vsnprintf//æ­¤å¤„å› ä¸ºæˆ‘ç”¨çš„æ˜¯mingwï¼Œç›´æ¥ç”¨äº†vsnprintfï¼Œè¯·è‡ªè¡Œåˆ¤æ–­
 #endif
 
-/** Ğ´ÈÕÖ¾·½·¨ */
+/** å†™æ—¥å¿—æ–¹æ³• */
 #define EWRITE_LOG(LEVEL, FMT, ...) \
 { \
     std::stringstream ss; \
@@ -89,7 +71,7 @@
     EasyLog::GetInstance()->WriteLog(LEVEL, ss.str().c_str(), ##__VA_ARGS__); \
 }
 
-//! ¿ìËÙºê
+//! å¿«é€Ÿå®
 #define ELOG_TRACE(FMT , ...) EWRITE_LOG(EasyLog::LOG_TRACE, FMT, ##__VA_ARGS__)
 #define ELOG_DEBUG(FMT , ...) EWRITE_LOG(EasyLog::LOG_DEBUG, FMT, ##__VA_ARGS__)
 #define ELOG_INFO(FMT  , ...) EWRITE_LOG(EasyLog::LOG_INFO , FMT, ##__VA_ARGS__)
@@ -111,24 +93,24 @@
 class LOGGER_API EasyLog
 {
 public:
-    /** ÈÕÖ¾¼¶±ğ*/
+    /** æ—¥å¿—çº§åˆ«*/
 	enum LOG_LEVEL { LOG_TRACE = 0, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_ALARM,  LOG_FATAL };
 
 public:
-    /** µ¥ÀıÄ£Ê½ */
+    /** å•ä¾‹æ¨¡å¼ */
     static EasyLog * GetInstance() ;
-    //void EasyLogDestroy(){delete this;}//µ÷ÓÃ£ºEasyLog::GetInstance()->EasyLogDestroy();²»½¨Òéµ÷ÓÃ£¬destroyºóÔÙ´Îµ÷ÓÃ»á±ÀÀ££¬Ã¿´ÎĞ´ÈÕÖ¾ÒÑ¾­flushÁË£¬ËùÒÔ²»Ì«ĞèÒª£¬Èç¹ûÒªµ÷ÓÃ£¬Çë±£Ö¤ÔÚ×îºóÓÃ
+    //void EasyLogDestroy(){delete this;}//è°ƒç”¨ï¼šEasyLog::GetInstance()->EasyLogDestroy();ä¸å»ºè®®è°ƒç”¨ï¼Œdestroyåå†æ¬¡è°ƒç”¨ä¼šå´©æºƒï¼Œæ¯æ¬¡å†™æ—¥å¿—å·²ç»flushäº†ï¼Œæ‰€ä»¥ä¸å¤ªéœ€è¦ï¼Œå¦‚æœè¦è°ƒç”¨ï¼Œè¯·ä¿è¯åœ¨æœ€åç”¨
 
 public:
-    /** Ğ´ÈÕÖ¾²Ù×÷ */
+    /** å†™æ—¥å¿—æ“ä½œ */
 	void WriteLog(LOG_LEVEL level, const char *pLogText, ...);
 
 	void WriteLog(std::string logText, LOG_LEVEL level = LOG_ERROR);
 
-    /** ÉèÖÃº¯Êı */
+    /** è®¾ç½®å‡½æ•° */
 
     /**
-    * @brief  :  SetLogDir ÉèÖÃÈÕÖ¾Ä¿Â¼
+    * @brief  :  SetLogDir è®¾ç½®æ—¥å¿—ç›®å½•
     *
     * @param  :  std::string dir
     * @return :  void
@@ -137,7 +119,7 @@ public:
     void SetLogDir(std::string dir);
 
     /**
-    * @brief  :  SetPrint2StdOut ÉèÖÃÊÇ·ñÍ¬Ê±½«ÈÕÖ¾´òÓ¡µ½±ê×¼Êä³ö
+    * @brief  :  SetPrint2StdOut è®¾ç½®æ˜¯å¦åŒæ—¶å°†æ—¥å¿—æ‰“å°åˆ°æ ‡å‡†è¾“å‡º
     *
     * @param  :  bool isprint
     * @return :  void
@@ -146,22 +128,36 @@ public:
     void SetPrint2StdOut(bool isprint);
 
     /**
-    * @brief  :  SetFileMaxSize ÉèÖÃÈÕÖ¾ÎÄ¼ş´óĞ¡
+    * @brief  :  SetFileMaxSize è®¾ç½®æ—¥å¿—æ–‡ä»¶å¤§å°
     *
-    * @param  :  int size µ¥Î»M
+    * @param  :  int size å•ä½M
     * @return :  void
     * @retval :
     */
     void SetFileMaxSize(int size);
 
+    /**
+    * @brief SetLogLevel è®¾ç½®æœ€å°æ—¥å¿—çº§åˆ«
+    *
+    * @param LOG_LEVEL level
+    * @return:   void
+    */
     void SetLogLevel(LOG_LEVEL level);
+
+    /**
+    * @brief SetOutdateDay è®¾ç½®æ—¥å¿—è¿‡æœŸæ—¶é—´
+    *
+    * @param int day å¦‚æœ<=0,åˆ™è®¤ä¸ºè®¾ç½®ä¸è¿‡æœŸ
+    * @return:   void
+    */
+    //void SetOutdateDay(int day);
 private:
     EasyLog(void);
     virtual ~EasyLog(void);
 
     bool Init();
 
-    //¼ì²éÎÄ¼ş´óĞ¡
+    //æ£€æŸ¥æ–‡ä»¶å¤§å°
     bool CheckFileSize();
 
     std::string GenerateFilePath();
@@ -169,22 +165,23 @@ private:
     bool ComfirmFolderExists(std::string filepath);
 
 private:
-    /** Ğ´ÎÄ¼ş */
+    /** å†™æ–‡ä»¶ */
     std::ofstream m_fileOut;
-    std::string filename;               //µ±Ç°Ê¹ÓÃµÄÎÄ¼şÃû      ±ê×¼ÑùÊ½Îª ./log/2019-11-18/08_10_22_01.txt
-    std::string file_name_prefix;       //µ±Ç°Ê¹ÓÃµÄÎÄ¼şÃûÇ°×º  
-    int index;                          //ÎÄ¼şÃûºó×º
+    std::string filename;               //å½“å‰ä½¿ç”¨çš„æ–‡ä»¶å      æ ‡å‡†æ ·å¼ä¸º ./log/2019-11-18/08_10_22_01.txt
+    std::string file_name_prefix;       //å½“å‰ä½¿ç”¨çš„æ–‡ä»¶åå‰ç¼€  
+    int index;                          //æ–‡ä»¶ååç¼€
     long long filesize;
 
     bool isinited ;
 
     LOG_LEVEL level;
 
-    //ÓÉÓÚºê×÷Îª±àÒë¿ª¹Ø²»·½±ãÇĞ»»Ê¹ÓÃ,Ã¿´Î¶¼ĞèÒªÖØĞÂ±àÒë Òò´Ë½«¿ÉÄÜ»á¸Ä±äµÄºêĞŞ¸ÄÎª±äÁ¿²¢Ìí¼ÓÉèÖÃº¯Êı
+    //ç”±äºå®ä½œä¸ºç¼–è¯‘å¼€å…³ä¸æ–¹ä¾¿åˆ‡æ¢ä½¿ç”¨,æ¯æ¬¡éƒ½éœ€è¦é‡æ–°ç¼–è¯‘ å› æ­¤å°†å¯èƒ½ä¼šæ”¹å˜çš„å®ä¿®æ”¹ä¸ºå˜é‡å¹¶æ·»åŠ è®¾ç½®å‡½æ•°
 
     std::string dir;
     bool isprint2stdout;
     int filemaxsize;
+    int outdateday;
 };
 
 #define ELOGGER EasyLog::GetInstance()
