@@ -82,6 +82,8 @@ void Core::run()
 		if(srcdata.isEmpty() || !cfg.dbgcfg.bReadSrcData)
 		{
 			// 发送WebService请求，并获得返回结果
+			//http://127.0.0.1/wstm11/service.asmx/Counts
+
 			nResult = soap_call___ns1__Counts(&pimpl->m_oSoap,NULL,NULL,&getMobileCodeObject,getMobileCodeResponseObject);
 		}
 		else

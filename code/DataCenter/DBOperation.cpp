@@ -108,7 +108,6 @@ bool DBOperation::GetLastestRecord(int type, Record& data, QString* err )
 				ELOGD("Open database failure,the erro is %s", qPrintable(_db->lastError().text()));
 				return false;
 			}
-
 			bool res = true;
 			do 
 			{//为了关闭连接时 没有query使用 //查询main information
@@ -145,7 +144,7 @@ bool DBOperation::GetLastestRecord(int type, Record& data, QString* err )
 					data.autorejects   = query.value(5).toInt();
 					data.dt_start      = QDateTime::fromString(query.value(6).toString(), "yyyy-MM-dd hh:mm:ss"); 
 					data.dt_end        = QDateTime::fromString(query.value(7).toString(), "yyyy-MM-dd hh:mm:ss"); 
-					if(type == EOperDB_ShiftDB)
+					if(type == ERT_Shift)
 					{
 						data.date = QDate::fromString(query.value(8).toString(), "yyyy-MM-dd");
 						data.shift = query.value(9).toInt();
@@ -154,6 +153,7 @@ bool DBOperation::GetLastestRecord(int type, Record& data, QString* err )
 					{//过检总数大于0才有其他信息
 						continue;
 					}
+					mainrowidlst.insert(data.mainrowid);
 				}
 
 				if(!QueryMoldInfoByMainID(_db, mainrowidlst, mainrow_moldlst, moldrowidlst, err))

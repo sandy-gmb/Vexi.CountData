@@ -70,7 +70,7 @@ void MainUI::updateUI()
     {
 		if(recordtype == ERT_Shift)
 		{
-			ui->l_timeinterval->setText(tr("Shift:%1-%2.").arg(r.shiftDate.toString("yyyy.MM.dd")).arg(r.shift));
+			ui->l_timeinterval->setText(tr("Shift:%1-%2.").arg(r.shiftDate.toString("yyyy.MM.dd")).arg(r.shift+1));
 		}
 		ui->l_error->setText("");
         ui->ledt_date->setText(r.dt_start.date().toString("yyyy-MM-dd"));

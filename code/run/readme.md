@@ -7,8 +7,9 @@
     4. [班次信息配置](#班次信息配置) 
     5. [调试信息配置](#调试信息配置) 
 3. [更新日志](#更新日志)
-    1. [Version:1.0.0.2](#Version:1.0.0.2) 
-    2. [Version:1.0.0.1](#Version:1.0.0.1) 
+    1. [Version:1.0.0.3](#Version:1.0.0.3) 
+    2. [Version:1.0.0.2](#Version:1.0.0.2) 
+    3. [Version:1.0.0.1](#Version:1.0.0.1) 
 
 
 # 使用说明:
@@ -102,6 +103,17 @@ log_level=2
 
 
 # 更新日志
+## Version:1.0.0.3
+* Date: 2020-4-14
+* Note:
+    1. DataCenter->Version:1.0.0.5:
+        * fix#1 界面查询bug,界面看不到数据;
+        * fix#2 Sqlite使用bug,外键的级联删除未触发,导致子表存在很多垃圾数据的问题.
+        * fix#3 计算班次的日期和班次bug
+    2. DataView->Version:1.0.0.3:
+        * fix#1 查询界面切换记录类型时查询未更新时间列表和table区域的bug
+        * improve 按照Kau-hon的要求,界面显示的班次从1开始.
+    
 ## Version:1.0.0.2
 * Date: 2020-4-8
 * Note:

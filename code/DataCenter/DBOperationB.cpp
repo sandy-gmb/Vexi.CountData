@@ -427,6 +427,7 @@ void DBOperationB::DeleteOutdatedData(int outdatedays)
 			ELOGD("Open database failure,the erro is %s", qPrintable(rtdb->lastError().text()));
 			return ;
 		}
+		rtdb->exec("PRAGMA foreign_keys = ON;");
 		{
 			QString sql = QString("DELETE FROM %1 WHERE TimeEnd < '%2';").arg(tb_Main).arg(t);
 			QSqlQuery query(*rtdb);
@@ -517,6 +518,7 @@ bool DBOperationB::DeleteRecordAfterTime(EOperDatabase type, QDateTime time)
 			}
 			return false;
 		}
+		_db->exec("PRAGMA foreign_keys = ON;");
 		{
 			QString sql = QString("DELETE FROM %1 WHERE  TimeEnd >= '%2';").arg(tb_Main).arg(t);
 			QSqlQuery query(*_db);

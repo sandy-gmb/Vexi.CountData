@@ -248,7 +248,9 @@ bool GenerateRecord::StatisticsRecord(QList<QDateTime>& tlst, QList<Record>& lst
 		}
 		if(isshiftrecord)
 		{
-			shift->getShiftDateShift(r.dt_start, r.date, r.shift);
+			//取时间段中间的时间取获取班次日期和班次的判定,防止边界判定问题
+			QDateTime t = r.dt_start.addSecs(r.dt_start.secsTo(r.dt_end) / 2);
+			shift->getShiftDateShift(t, r.date, r.shift);
 		}
 		newlst.push_back(r);
 		if(j == lst.size())

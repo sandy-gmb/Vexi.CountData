@@ -65,7 +65,7 @@ void QueryWidget::on_listWidget_currentRowChanged( int row )
     {
 		if(recordtype == ERT_Shift)
 		{
-			ui->l_error->setText(tr("Shift:%1-%2").arg(r.shiftDate.toString("yyyy.MM.dd")).arg(r.shift));
+			ui->l_error->setText(tr("Shift:%1-%2").arg(r.shiftDate.toString("yyyy.MM.dd")).arg(r.shift+1));
 			ui->l_error->setStyleSheet("color: rgb(0, 0, 0);font: 11pt \"Times New Roman\";");
 		}
 		else
@@ -154,6 +154,9 @@ void QueryWidget::on_rbtn_show_shift_clicked()
 
 void QueryWidget::on_btn_refresh_clicked()
 {
+    //先设定日期选定为不可能的日期,比如当前如期之后一天,防止修改后日期没有改变导致不刷新其他相关界面
+    ui->dateEdit->setDate(QDate::currentDate().addDays(1));
+
     //获取有记录的日期列表,并保存
     m_pthis->signal_GetAllDate(recordtype, datelst);
     if(!datelst.isEmpty())
