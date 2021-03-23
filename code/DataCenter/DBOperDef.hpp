@@ -30,7 +30,7 @@ static const QString& create_tb_Main_SQL = QString("CREATE TABLE IF NOT EXISTS T
 static const QString& create_tb_Mold_SQL = QString("CREATE TABLE IF NOT EXISTS T_Mold (\
                                             ID           INTEGER  PRIMARY KEY AUTOINCREMENT,\
                                             TMainRowID   INTEGER,\
-                                            MoldID       INTEGER,\
+                                            MoldID       VARCHAR,\
                                             Inspected    INTEGER,\
                                             Rejects      INTEGER,\
                                             Defects      INTEGER,\
@@ -42,7 +42,7 @@ static const QString& create_tb_Mold_SQL = QString("CREATE TABLE IF NOT EXISTS T
 static const QString& create_tb_Sensor_SQL = QString("CREATE TABLE IF NOT EXISTS T_Sensor (\
                                               ID           INTEGER  PRIMARY KEY AUTOINCREMENT,\
                                               TMoldRowID   INTEGER,\
-                                              SensorID     INTEGER,\
+                                              SensorID     VARCHAR,\
                                               Rejects      INTEGER,\
                                               Defects      INTEGER ,\
                                               FOREIGN KEY (\
@@ -52,30 +52,30 @@ static const QString& create_tb_Sensor_SQL = QString("CREATE TABLE IF NOT EXISTS
 static const QString& create_tb_SensorAdd_SQL = QString("CREATE TABLE IF NOT EXISTS T_SensorAdd (\
                                                  ID           INTEGER  PRIMARY KEY AUTOINCREMENT,\
                                                  TSensorRowID INTEGER,\
-                                                 CounterID    INTEGER,\
-                                                 Nb           VARCHAR ,\
+                                                 CounterID    VARCHAR,\
+                                                 Nb           INTEGER ,\
                                                  FOREIGN KEY (\
                                                  TSensorRowID\
                                                  )\
                                                  REFERENCES T_Sensor (ID) ON DELETE CASCADE);");
 
 static const QString& create_tb_ShiftMain_SQL = QString("CREATE TABLE IF NOT EXISTS T_Main (\
-												   ID           INTEGER  PRIMARY KEY AUTOINCREMENT,\
-												   MachineID    VARCHAR,\
-												   Inspected    INTEGER,\
-												   Rejects      INTEGER,\
-												   Defects      INTEGER,\
-												   Autoreject   INTEGER,\
-												   [TimeStart] DATETIME,\
-												   [TimeEnd]   DATETIME,\
-												   Date VARCHAR,\
-												   Shift   INTEGER );");
+                                                   ID           INTEGER  PRIMARY KEY AUTOINCREMENT,\
+                                                   MachineID    VARCHAR,\
+                                                   Inspected    INTEGER,\
+                                                   Rejects      INTEGER,\
+                                                   Defects      INTEGER,\
+                                                   Autoreject   INTEGER,\
+                                                   [TimeStart] DATETIME,\
+                                                   [TimeEnd]   DATETIME,\
+                                                   Date VARCHAR,\
+                                                   Shift   INTEGER );");
 
 enum EOperDatabase
 {
-	EOperDB_RuntimeDB,
-	EOperDB_TimeIntervalDB,
-	EOperDB_ShiftDB,
+    EOperDB_RuntimeDB,
+    EOperDB_TimeIntervalDB,
+    EOperDB_ShiftDB,
 };
 
 

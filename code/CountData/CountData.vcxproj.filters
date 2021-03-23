@@ -13,27 +13,27 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="soap\soapC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="soap\soapClient.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="soap\stdsoap2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="fileVersion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="soap\soapClient.cpp">
+      <Filter>vexi_Pro</Filter>
+    </ClCompile>
+    <ClCompile Include="soap\soapC.cpp">
+      <Filter>vexi_Pro</Filter>
+    </ClCompile>
+    <ClCompile Include="protocolv2\protocolv2C.cpp">
+      <Filter>protocolv2</Filter>
+    </ClCompile>
+    <ClCompile Include="protocolv2\protocolv2Client.cpp">
+      <Filter>protocolv2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="soap\soapH.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="soap\stdsoap2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="soap\soapStub.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
@@ -41,6 +41,18 @@
     </ClInclude>
     <ClInclude Include="fileVersion.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="soap\soapStub.h">
+      <Filter>vexi_Pro</Filter>
+    </ClInclude>
+    <ClInclude Include="soap\soapH.h">
+      <Filter>vexi_Pro</Filter>
+    </ClInclude>
+    <ClInclude Include="protocolv2\protocolv2H.h">
+      <Filter>protocolv2</Filter>
+    </ClInclude>
+    <ClInclude Include="protocolv2\protocolv2Stub.h">
+      <Filter>protocolv2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -69,14 +81,26 @@
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="vexi_Pro">
+      <UniqueIdentifier>{7b8b754e-f073-462d-bce6-9e8d4abdbf4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="protocolv2">
+      <UniqueIdentifier>{353db11e-0e08-44db-9403-3cecaa355170}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Core.hpp">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="protocolv2\cwebservice.wsdl">
+      <Filter>protocolv2</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <None Include="soap\ServiceTM11Soap.nsmap" />
+    <None Include="protocolv2\protocolv2.nsmap">
+      <Filter>protocolv2</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CountData.rc" />

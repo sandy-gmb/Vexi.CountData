@@ -46,21 +46,21 @@ public:
 
     virtual void Start();
     virtual void Stop();
-	
+    
     /**
     * @brief  :  signal_GetDataByTime 获取最新一条记录
     *
-	* @param type: 0:按时间间隔 1:按班次
+    * @param type: 0:按时间间隔 1:按班次
     * @param  :  Record & data 返回数据
     * @return :  bool 可能由于异常原因导致出错(如数据库文件无法打开等)
     * @retval :
     */
     virtual bool GetLastestRecord(int type, Record& data, QString* err)=0;
-	
+    
     /**
     * @brief  :  signal_GetAllDate 获取当前记录的日期列表
-	*
-	* @param type: 0:按时间间隔 1:按班次
+    *
+    * @param type: 0:按时间间隔 1:按班次
     * @param  :  QList<QDate> & lst
     * @return :  bool
     */
@@ -91,11 +91,11 @@ public:
 signals:
     void sig_start();
 protected:
-	/** checkSensorIDIsShouldSave
-	 * @brief 检查指定ID缺陷信息是否需要保存
-	 * @param id:缺陷id
-	 */
-    virtual bool checkSensorIDIsShouldSave(int id);
+    /** checkSensorIDIsShouldSave
+     * @brief 检查指定ID缺陷信息是否需要保存
+     * @param id:缺陷id
+     */
+    virtual bool checkSensorIDIsShouldSave(QString id);
     /**
     * @brief  :  Init 初始化对应名字的数据库文件
     *
@@ -105,33 +105,33 @@ protected:
     * @retval :
     */
     virtual bool Init(QSharedPointer<QSqlDatabase> _db, QString filelname, QString* err = nullptr, bool isclassdb = false);
-	virtual void DeleteOutdatedData(int outdatedays);
+    virtual void DeleteOutdatedData(int outdatedays);
 
-	virtual bool GetLastestShiftRecordEndTime(QDateTime& t, QString* err);
-	virtual bool GetLatestRecordEndTime(QDateTime& t, QString* err);
+    virtual bool GetLastestShiftRecordEndTime(QDateTime& t, QString* err);
+    virtual bool GetLatestRecordEndTime(QDateTime& t, QString* err);
 
-	virtual bool GetLastestRecordEndTime(QSharedPointer<QSqlDatabase> db, QDateTime& t, QString* err);
-	virtual bool GetOldestRecordStartTime(QSharedPointer<QSqlDatabase> db, QDateTime& t, QString* err);
+    virtual bool GetLastestRecordEndTime(QSharedPointer<QSqlDatabase> db, QDateTime& t, QString* err);
+    virtual bool GetOldestRecordStartTime(QSharedPointer<QSqlDatabase> db, QDateTime& t, QString* err);
 
-	virtual bool DeleteRecordAfterTime(EOperDatabase type, QDateTime time);
-	virtual bool GetOperDBParams(EOperDatabase type, QSharedPointer<QSqlDatabase>& _db, QSharedPointer<QMutex>& _db_mutex);
-	virtual bool GetRecordDBParams(ERecordType type, QSharedPointer<QSqlDatabase>& _db, QSharedPointer<QMutex>& _db_mutex);
-	virtual bool GetDBOperType(ERecordType type, EOperDatabase& optype);
+    virtual bool DeleteRecordAfterTime(EOperDatabase type, QDateTime time);
+    virtual bool GetOperDBParams(EOperDatabase type, QSharedPointer<QSqlDatabase>& _db, QSharedPointer<QMutex>& _db_mutex);
+    virtual bool GetRecordDBParams(ERecordType type, QSharedPointer<QSqlDatabase>& _db, QSharedPointer<QMutex>& _db_mutex);
+    virtual bool GetDBOperType(ERecordType type, EOperDatabase& optype);
 public:
     //策略数据
-	StrategyConfig cfgStrategy;
+    StrategyConfig cfgStrategy;
 
-	GenerateRecord* work;
+    GenerateRecord* work;
     QThread* thd;            //线程对象 用于包裹GenerateRecord
 
-	QSharedPointer<QSqlDatabase> db;        //连接时间间隔统计记录数据库的对象,使用一个对象,防止重复打开
-	QSharedPointer<QMutex>  rtdb_mutex;
-	QSharedPointer<QSqlDatabase> rtdb;      //连接实时数据库的对象,使用一个对象,防止重复打开
-	QSharedPointer<QMutex>  db_mutex;
-	QSharedPointer<QSqlDatabase> shiftdb;   //连接实时数据库的对象,使用一个对象,防止重复打开
-	QSharedPointer<QMutex>  shiftdb_mutex;
+    QSharedPointer<QSqlDatabase> db;        //连接时间间隔统计记录数据库的对象,使用一个对象,防止重复打开
+    QSharedPointer<QMutex>  rtdb_mutex;
+    QSharedPointer<QSqlDatabase> rtdb;      //连接实时数据库的对象,使用一个对象,防止重复打开
+    QSharedPointer<QMutex>  db_mutex;
+    QSharedPointer<QSqlDatabase> shiftdb;   //连接实时数据库的对象,使用一个对象,防止重复打开
+    QSharedPointer<QMutex>  shiftdb_mutex;
 
-	friend class GenerateRecord;
+    friend class GenerateRecord;
 };
 
 #endif//DBOperationB_8WXOXPIVYL3XP0D0_H_

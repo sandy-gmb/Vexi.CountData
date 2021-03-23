@@ -40,7 +40,7 @@ public:
     /**
     * @brief  :  signal_GetDataByTime 获取最新一条记录
     *
-	* @param type: 0:按时间间隔 1:按班次
+    * @param type: 0:按时间间隔 1:按班次
     * @param  :  Record & data 返回数据
     * @return :  bool 可能由于异常原因导致出错(如数据库文件无法打开等)
     * @retval :
@@ -60,23 +60,23 @@ public:
 
 protected:
 
-	virtual bool QueryRecordByTime(EOperDatabase type, QDateTime st, QDateTime et,QList<Record>& lst, QString* err);
-	virtual bool QueryMoldInfoByMainID(QSharedPointer<QSqlDatabase> db, int mainrowid, QList<MoldInfo>& moldinfo, QString* err);
-	virtual bool QuerySensorInfoByMoldID(QSharedPointer<QSqlDatabase> db, int moldid, QList<SensorInfo>& sensorinfo, QString* err);
-	virtual bool QuerySensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> db, int sensorid, QMap<int, int>& addinginfo, QString* err);
+    virtual bool QueryRecordByTime(EOperDatabase type, QDateTime st, QDateTime et,QList<Record>& lst, QString* err);
+    virtual bool QueryMoldInfoByMainID(QSharedPointer<QSqlDatabase> db, int mainrowid, QList<MoldInfo>& moldinfo, QString* err);
+    virtual bool QuerySensorInfoByMoldID(QSharedPointer<QSqlDatabase> db, int moldid, QList<SensorInfo>& sensorinfo, QString* err);
+    virtual bool QuerySensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> db, int sensorid, QMap<QString, int>& addinginfo, QString* err);
 
-	virtual bool SaveRecord(EOperDatabase type, const Record& lst, QString* err, bool isoutdb = false);
-	virtual bool SaveMoldInfoByMainID(QSharedPointer<QSqlDatabase> db, int mainrowid, const QList<MoldInfo>& moldinfo, QString* err);
-	virtual bool SaveSensorInfoByMoldID(QSharedPointer<QSqlDatabase> db, int moldrowid, const QList<SensorInfo>& sensorinfo, QString* err);
-	virtual bool SaveSensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> db, int sensorrowid, const QMap<int, int>& addinginfo, QString* err);
-	
-	virtual bool SaveShiftRecord(QSharedPointer<QSqlDatabase> _db, const Record& re, QString* err, bool isoutdb = false);
+    virtual bool SaveRecord(EOperDatabase type, const Record& lst, QString* err, bool isoutdb = false);
+    virtual bool SaveMoldInfoByMainID(QSharedPointer<QSqlDatabase> db, int mainrowid, const QList<MoldInfo>& moldinfo, QString* err);
+    virtual bool SaveSensorInfoByMoldID(QSharedPointer<QSqlDatabase> db, int moldrowid, const QList<SensorInfo>& sensorinfo, QString* err);
+    virtual bool SaveSensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> db, int sensorrowid, const QMap<QString, int>& addinginfo, QString* err);
+    
+    virtual bool SaveShiftRecord(QSharedPointer<QSqlDatabase> _db, const Record& re, QString* err, bool isoutdb = false);
 
-	/********************* process Generate Record ******************************************************************************************************/
-	
-	virtual bool SaveRecordList(EOperDatabase type, QList<Record>& newlst, QString* err);
+    /********************* process Generate Record ******************************************************************************************************/
+    
+    virtual bool SaveRecordList(EOperDatabase type, QList<Record>& newlst, QString* err);
 
-	friend class GenerateRecord;
+    friend class GenerateRecord;
 };
 
 #endif//DBOperation_Recur_NGSIT5JNI5HKDVDV_H_

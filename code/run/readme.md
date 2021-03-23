@@ -9,6 +9,7 @@
     4. [班次信息配置](#班次信息配置) 
     5. [调试信息配置](#调试信息配置) 
 5. [更新日志](#更新日志)
+    1. [Version:1.0.1.1](#Version:1.0.1.1) 
     1. [Version:1.0.1.0](#Version:1.0.1.0) 
     2. [Version:1.0.0.3](#Version:1.0.0.3) 
     3. [Version:1.0.0.2](#Version:1.0.0.2) 
@@ -49,6 +50,7 @@ data_outdate_days=30
 language=0
 show_record_type=0
 code_file_prefix=CodeTs
+protocol_version=0
 
 [timeInterval]
 time_interval=5
@@ -77,12 +79,14 @@ log_level=2
 4. system.show_record_type:主界面显示的记录类型 0:按时间间隔的统计记录 1:按班次的统计记录
 5. system.language:0中文,1英文
 6. system.code_file_prefix:使用的代码(包含模板代码和缺陷码)的词条对应文件名前缀
-文件放在运行目录下的文件下,如示例配置,完整文件名为CodeTs_en.ini,如下所示,其中MoldWords下的是模板代码对应的词条,SensorWords下对应的是缺陷码对应的词条.
+7. system.protocol_version:webservice协议版本,0:Vexi(v1.x),1:Tera(v2.4)注:v2.4当前不支持组合设备(如MCAL+COMBI)这种方式的数据,支持单设备单模号的.
+* 文件放在运行目录下的文件下,如示例配置,完整文件名为CodeTs_en.ini,如下所示,其中MoldWords下的是模板代码对应的词条,SensorWords下对应的是缺陷码对应的词条.
 示例文件(英文文件内容如下):
+1. 示例文件1(v1.0.1.0)
 ```
 [MoldWords]
 0=Normal
-1=Tailand
+1=Thailand
 2=India
 
 [SensorWords]
@@ -102,6 +106,53 @@ log_level=2
 55=EXTENSION2
 110=COMPOSITE COUNTER
 ```
+2. 示例文件2(v1.0.1.1)
+```
+[MoldWords]
+0=Normal
+1=泰国
+2=印度
+
+[SensorWords]
+Sidewall=侧壁
+Sidewall-Sidewall-other=侧壁-其他缺陷
+Sidewall-Stone=侧壁-结石
+Sidewall-Blister=侧壁-气泡
+Sidewall-Drawn=侧壁-瓶身细长缺陷
+Sidewall-Side object=侧壁-边缘对象
+Sidewall-Density=侧壁-密度
+Sidewall-Thin=侧壁-薄壁
+Sidewall-Bird=侧壁-
+Sidewall-Wing=侧壁翼形
+Sidewall-Error=侧壁-错误
+Sidewall-Black image=侧壁-黑图
+Stress=应力
+Stress-Stress=应力-应力缺陷
+Stress-Error=应力-错误
+Stress-Black image=应力-黑图
+Dim=尺寸检测
+Dim-Verticality=尺寸检测-垂直度
+Dim-Diameter=尺寸检测-直径
+Dim-Height=尺寸检测-高度
+Dim-Error=尺寸检测-错误
+Low contrast=FC
+Low contrast-Transition=FC-位移
+Low contrast-Deformation=FC-变形
+Low contrast-No learning parameters=FC-无学习参数
+Low contrast-Error=FC-错误
+Low contrast-Black image=FC-黑图
+Low contrast 2=FC2
+Low contrast 2-Localisation=FC2-定位
+Low contrast 2-Black image=FC2-黑图
+Low contrast 2-Learning=FC2-学习错误
+Low contrast 2-Other-detects=FC20-其他缺陷
+Low contrast 2-Compact=FC2-脏料
+Low contrast 2-Blister=FC2-气泡
+Low contrast 2-Drawn=FC2-细长缺陷
+Low contrast 2-Side object=FC2-边缘对象
+Low contrast 2-Density=FC2-密度
+Low contrast 2-Low contrast 1=FC2-低对比度FC1
+```
 ## 时间间隔配置
 1. timeInterval.time_interval:生成记录数据的时间间隔,
     * 0:30分钟,
@@ -119,6 +170,14 @@ log_level=2
 
 
 # 更新日志
+## Version:1.0.1.1
+* Date: 2021-3-23
+* Note:
+    1. 增加TERA协议版本2.4的支持,需要注意:当前只支持TERA版本协议,暂不支持COMBI+TERA的协议,即不支持多机器或多模号的数据传输.
+    2. VEXI使用示例文件1格式,TERA使用示例文件2格式
+    3. 将proV:1.0.1.0[DataCenter:1.0.1.0 | DataView:1.0.1.0 | Config:1.0.1.0 ] 发布为1.0.1.1
+    4. 现场运行可根据系统使用32位或64位版本程序
+    
 ## Version:1.0.1.0
 * Date: 2020-5-8
 * Note:

@@ -20,6 +20,7 @@ public:
 
     QDateTime lastt;        //上一次的时间
     DBOperation m_db;
+    SystemConfig sysCfg;
 };
 
 
@@ -39,11 +40,12 @@ bool DataCenter::Init(QString* err)
 {
     DataCenterConf conf;
     GetDataCenterConf(conf);
+    GetSystemConf(m_pimpl->sysCfg);
 
     m_pimpl->m_db.cfgStrategy = conf.strategy;
 
     m_pimpl->m_db.work->eti = conf.eTimeInterval;
-	m_pimpl->m_db.work->cfgSystem = conf.syscfg;
+    m_pimpl->m_db.work->cfgSystem = conf.syscfg;
     m_pimpl->m_db.work->shift = conf.ptrShift;
 
     return m_pimpl->m_db.Init(err);
@@ -57,13 +59,26 @@ bool DataCenter::PaserDataToDataBase(const QString& xmldata, QString* err)
         SAFE_SET(err, QObject::tr("No Input Data"));
         return false;
     }
-	
+    
     XmlData data;
     data.dt_start = m_pimpl->lastt;
-    if(!XMLPaser::PaserInfo(xmldata, data, err)) 
-    {//解析数据出错
-        ELOGE("%s  %s", xmldata.toLocal8Bit().constData(), err->toLocal8Bit().constData());
-        return false;
+    switch (m_pimpl->sysCfg.iProtocolVersion)
+    {
+    case EPV_VEXI:
+        if (!XMLPaser::PaserInfo(xmldata, data, err))
+        {//解析数据出错
+            ELOGE("%s  %s", xmldata.toLocal8Bit().constData(), err->toLocal8Bit().constData());
+            return false;
+        }
+        break;
+    case EPV_TERA:
+    default:
+        if (!XMLPaserV2::PaserInfo(xmldata, data, err))
+        {//解析数据出错
+            ELOGE("%s  %s", xmldata.toLocal8Bit().constData(), err->toLocal8Bit().constData());
+            return false;
+        }
+        break;
     }
     m_pimpl->lastt = QDateTime::currentDateTime();
     //将数据保存到数据库
@@ -97,12 +112,12 @@ bool DataCenter::GetRecordByTime(int type,  QDateTime st, QDateTime end, Record&
 //
 //void DataCenter::RecordConfigChanged()
 //{
-//	m_pimpl->m_db.RecordConfigChanged();
+//    m_pimpl->m_db.RecordConfigChanged();
 //}
 //
 //void DataCenter::OnDataConfChange(const DataCenterConf& cfg)
 //{
-//	m_pimpl->m_db.OnDataConfChange(cfg);
+//    m_pimpl->m_db.OnDataConfChange(cfg);
 //}
 
 void DataCenter::Stop()

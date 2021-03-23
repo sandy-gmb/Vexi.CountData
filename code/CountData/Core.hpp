@@ -15,7 +15,7 @@ public slots:
     void run();
 
     void stop();
-	void OnCoreConfChange(const CoreConf& _cfg);
+    void OnCoreConfChange(const CoreConf& _cfg);
 
     signals:
         /**
@@ -28,18 +28,23 @@ public slots:
     */
     bool signal_PaserDataToDataBase(const QString& xmldata, QString* err);
 
-	 //获取 获取使用配置
-	void signal_GetCoreConf(CoreConf& cfg);
+     //获取 获取使用配置
+    void signal_GetCoreConf(CoreConf& cfg);
+
+private:
+    void runVexiProtocolV1(const QStringList& srcdata);
+    void runProtocolV2(const QStringList& srcdata);
 public:
 
     class Impl;
     Impl * pimpl;
 
 
-	int timeinterval;
-	CoreConf cfg;
+    int timeinterval;
+    CoreConf cfg;
 
     bool isrun;
+    bool isexit;
 };
 
 #endif//CORE_HH_

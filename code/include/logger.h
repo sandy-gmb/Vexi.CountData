@@ -13,45 +13,23 @@
  * @Note:Info 级别不会打印文件名 行号 函数名等信息
 
  * @Date:2020-4-9 
- * @Version:1.0
+ * @Version:2.0 
+   1. 增加过期日志定义和将条件宏修改为变量并提供接口设置
+   2. 增加可自定义前缀用于程序中不同模块等日志可放在不同的文件中
+
+ * @Version:1.0 将原来的头文件封装成动态库,并按照自己的需求修改
  * @Author Guo.Mingbing
  */
 
 #ifndef EASYLOG_H_
 #define EASYLOG_H_
 
-#pragma once
-
-#include <iostream>
 #include <string>
 #include <sstream>
-#include <fstream>
 #include <functional>
-#include <iomanip>
-#include <stdarg.h>
-#include <time.h>
+#include <memory>
 
-
-#ifndef EASY_LOG_FILE_NAME
-#  define EASY_LOG_FILE_NAME			"normal.txt"   /** 日志的文件名 ， 如果不以用日期文件夹保存目录,则使用此名*/
-#endif
-
-#ifndef EASY_LOG_FILE_NAME_DATE
-#  define EASY_LOG_FILE_NAME_DATE		1            /** 1表示使用日期作为文件名 */
-#endif
-
-#ifndef EASY_LOG_LINE_BUFF_SIZE
-#  define EASY_LOG_LINE_BUFF_SIZE		1024            /** 一行的最大缓冲 */
-#endif
-
-#ifndef EASY_LOG_DISABLE_LOG
-#  define EASY_LOG_DISABLE_LOG          0               /** 非0表示禁用LOG */
-#endif
-
-
-#ifndef EASY_LOG_COVER_LOG
-#  define EASY_LOG_COVER_LOG          1               /** 非0表示追加写,覆盖写则使用日期作为文件名,同一个日期只有一个文件 */
-#endif
+#pragma once
 
 #ifdef WIN32
 #else
@@ -59,55 +37,31 @@
 #   define  vsnprintf_s vsnprintf//此处因为我用的是mingw，直接用了vsnprintf，请自行判断
 #endif
 
-/** 写日志方法 */
-#define EWRITE_LOG(LEVEL, FMT, ...) \
-{ \
-    std::stringstream ss; \
-    ss << FMT; \
-    if (LEVEL != EasyLog::LOG_INFO) \
-    { \
-        ss << " (" << __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " )"; \
-    } \
-    EasyLog::GetInstance()->WriteLog(LEVEL, ss.str().c_str(), ##__VA_ARGS__); \
-}
+ /** 日志级别定义*/
+enum LOG_LEVEL { LOG_TRACE = 0, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL };
 
-//! 快速宏
-#define ELOG_TRACE(FMT , ...) EWRITE_LOG(EasyLog::LOG_TRACE, FMT, ##__VA_ARGS__)
-#define ELOG_DEBUG(FMT , ...) EWRITE_LOG(EasyLog::LOG_DEBUG, FMT, ##__VA_ARGS__)
-#define ELOG_INFO(FMT  , ...) EWRITE_LOG(EasyLog::LOG_INFO , FMT, ##__VA_ARGS__)
-#define ELOG_WARN(FMT  , ...) EWRITE_LOG(EasyLog::LOG_WARN , FMT, ##__VA_ARGS__)
-#define ELOG_ERROR(FMT , ...) EWRITE_LOG(EasyLog::LOG_ERROR, FMT, ##__VA_ARGS__)
-#define ELOG_ALARM(FMT , ...) EWRITE_LOG(EasyLog::LOG_ALARM, FMT, ##__VA_ARGS__)
-#define ELOG_FATAL(FMT , ...) EWRITE_LOG(EasyLog::LOG_FATAL, FMT, ##__VA_ARGS__)
-
-#define ELOGT( FMT , ... ) ELOG_TRACE(FMT, ##__VA_ARGS__)
-#define ELOGD( FMT , ... ) ELOG_DEBUG(FMT, ##__VA_ARGS__)
-#define ELOGI( FMT , ... ) ELOG_INFO (FMT, ##__VA_ARGS__)
-#define ELOGW( FMT , ... ) ELOG_WARN (FMT, ##__VA_ARGS__)
-#define ELOGE( FMT , ... ) ELOG_ERROR(FMT, ##__VA_ARGS__)
-#define ELOGA( FMT , ... ) ELOG_ALARM(FMT, ##__VA_ARGS__)
-#define ELOGF( FMT , ... ) ELOG_FATAL(FMT, ##__VA_ARGS__)
 
 #include "logger_global.h"
+
+LOGGER_API inline std::string LogEnumToString(LOG_LEVEL l);
+
+typedef std::function< void(const std::string&)> TypeLogNormalCallBack;
+typedef std::function< void(const std::string& , LOG_LEVEL, const std::string&)> TypeLogSpecCallBack;
 
 class LOGGER_API EasyLog
 {
 public:
-    /** 日志级别*/
-	enum LOG_LEVEL { LOG_TRACE = 0, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_ALARM,  LOG_FATAL };
 
 public:
     /** 单例模式 */
-    static EasyLog * GetInstance() ;
-    //void EasyLogDestroy(){delete this;}//调用：EasyLog::GetInstance()->EasyLogDestroy();不建议调用，destroy后再次调用会崩溃，每次写日志已经flush了，所以不太需要，如果要调用，请保证在最后用
-
+    static std::shared_ptr<EasyLog> GetInstance(const std::string& prefix = "") ;
+    virtual ~EasyLog(void);
 public:
     /** 写日志操作 */
 	void WriteLog(LOG_LEVEL level, const char *pLogText, ...);
-
 	void WriteLog(std::string logText, LOG_LEVEL level = LOG_ERROR);
 
-    /** 设置函数 */
+    /** 设置函数 静态函数 用于统一设置相关配置 */
 
     /**
     * @brief  :  SetLogDir 设置日志目录
@@ -125,7 +79,7 @@ public:
     * @return :  void
     * @retval :
     */
-    void SetPrint2StdOut(bool isprint);
+    static void SetPrint2StdOut(bool isprint);
 
     /**
     * @brief  :  SetFileMaxSize 设置日志文件大小
@@ -134,7 +88,7 @@ public:
     * @return :  void
     * @retval :
     */
-    void SetFileMaxSize(int size);
+    static void SetFileMaxSize(int size);
 
     /**
     * @brief SetLogLevel 设置最小日志级别
@@ -142,7 +96,7 @@ public:
     * @param LOG_LEVEL level
     * @return:   void
     */
-    void SetLogLevel(LOG_LEVEL level);
+    static void SetLogLevel(LOG_LEVEL level);
 
     /**
     * @brief SetOutdateDay 设置日志过期时间
@@ -150,10 +104,23 @@ public:
     * @param int day 如果<=0,则认为设置不过期
     * @return:   void
     */
-    //void SetOutdateDay(int day);
+    static void SetOutdateDay(int day);
+
+    /**
+     * SetCoverMode
+     * 
+     * @para: bool iscoverywrite 是否覆盖写入
+     * @return:   void
+     */
+    static void SetCoverMode(bool iscoverywrite);
+        
+    static std::string SetCallBack(const TypeLogNormalCallBack& func);
+    static std::string SetCallBack(const TypeLogSpecCallBack& func);
+
+    static void RemoveCallBack(const std::string& key);
+
 private:
-    EasyLog(void);
-    virtual ~EasyLog(void);
+    EasyLog(const std::string& prefix);
 
     bool Init();
 
@@ -164,26 +131,35 @@ private:
 
     bool ComfirmFolderExists(std::string filepath);
 
+    void DeleteOutdatedFiles();
+
 private:
-    /** 写文件 */
-    std::ofstream m_fileOut;
-    std::string filename;               //当前使用的文件名      标准样式为 ./log/2019-11-18/08_10_22_01.txt
-    std::string file_name_prefix;       //当前使用的文件名前缀  
-    int index;                          //文件名后缀
-    long long filesize;
-
-    bool isinited ;
-
-    LOG_LEVEL level;
-
-    //由于宏作为编译开关不方便切换使用,每次都需要重新编译 因此将可能会改变的宏修改为变量并添加设置函数
-
-    std::string dir;
-    bool isprint2stdout;
-    int filemaxsize;
-    int outdateday;
+    class Impl;
+    Impl* m_pimpl;
 };
 
-#define ELOGGER EasyLog::GetInstance()
+#define ELOGGERF(str) EasyLog::GetInstance(str)
+#define ELOGGER EasyLog::GetInstance("")
+
+/** 写日志方法 */
+#define EWRITE_LOG(LEVEL, FMT, ...) \
+{ \
+    std::stringstream ss; \
+    ss << FMT; \
+    if (LEVEL != LOG_INFO) \
+    { \
+        ss << " (" << __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " )"; \
+    } \
+    EasyLog::GetInstance("")->WriteLog(LEVEL, ss.str().c_str(), ##__VA_ARGS__); \
+}
+
+#define ELOGT( FMT , ... ) EWRITE_LOG(LOG_TRACE, FMT, ##__VA_ARGS__)
+#define ELOGD( FMT , ... ) EWRITE_LOG(LOG_DEBUG, FMT, ##__VA_ARGS__)
+#define ELOGI( FMT , ... ) EWRITE_LOG(LOG_INFO , FMT, ##__VA_ARGS__)
+#define ELOGW( FMT , ... ) EWRITE_LOG(LOG_WARN , FMT, ##__VA_ARGS__)
+#define ELOGE( FMT , ... ) EWRITE_LOG(LOG_ERROR, FMT, ##__VA_ARGS__)
+#define ELOGA( FMT , ... ) EWRITE_LOG(LOG_ALARM, FMT, ##__VA_ARGS__)
+#define ELOGF( FMT , ... ) EWRITE_LOG(LOG_FATAL, FMT, ##__VA_ARGS__)
+
 
 #endif /* EASYLOG_H_ */

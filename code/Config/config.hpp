@@ -4,7 +4,7 @@
 * @brief     : 用于本软件的配置管理,可提供给其他模块 读取和写入
 *
 * @detail    :当前包含以下配置:               
-*	          1 解析保存元数据的过滤规则
+*              1 解析保存元数据的过滤规则
 *             2 系统运行的其他配置(特别的时间间隔)
 *             3 模板名,缺陷码指定的词条对应文件前缀
 *             4 当前语言版本等
@@ -40,30 +40,37 @@ public slots:
     * @return:   void
     */
     void GetDataCenterConf(DataCenterConf& cfg);
-	/**
-	* @brief GetCoreConf
-	*
-	* @param CoreConf & cfg
-	* @return:   void
-	*/
-	void GetCoreConf(CoreConf& cfg);
-	/**
-	* @brief GetAllConfig
-	*
-	* @param AllConfig & cfg
-	* @return:   void
-	*/
-	void GetAllConfig(AllConfig& cfg);
-	void SetAllConfig(const AllConfig& cfg);
+    /**
+    * @brief GetCoreConf
+    *
+    * @param CoreConf & cfg
+    * @return:   void
+    */
+    void GetCoreConf(CoreConf& cfg);
+    /**
+    * @brief GetCoreConf
+    *
+    * @param CoreConf & cfg
+    * @return:   void
+    */
+    void GetSystemConf(SystemConfig& cfg);
+    /**
+    * @brief GetAllConfig
+    *
+    * @param AllConfig & cfg
+    * @return:   void
+    */
+    void GetAllConfig(AllConfig& cfg);
+    void SetAllConfig(const AllConfig& cfg);
 
-	/**
-	* @brief GetConfigLogLevel
-	*
-	* @return:   int
-	*/
-	int GetConfigLogLevel();
+    /**
+    * @brief GetConfigLogLevel
+    *
+    * @return:   int
+    */
+    int GetConfigLogLevel();
 
-	//配置更新函数
+    //配置更新函数
     //获取词条翻译文件路径
     /**
     * @brief GetWordsTranslation
@@ -74,20 +81,20 @@ public slots:
     * @param QString> & sensorwors
     * @return:   void
     */
-    void GetWordsTranslation(QMap<int, QString>& moldwors, QMap<int, QString>& sensorwors);
-	/**
-	* @brief GetTimeInterval
-	*
-	* @return:   int
-	*/
-	int GetTimeInterval();
+    void GetWordsTranslation(QMap<QString, QString>& moldwors, QMap<QString, QString>& sensorwors);
+    /**
+    * @brief GetTimeInterval
+    *
+    * @return:   int
+    */
+    int GetTimeInterval();
 
 signals:
-	void LanguageChanged(int lang);
-	void RecordShowChanged(int recordtype);
-	void RecordConfigChanged();
-	void CoreConfChange(const CoreConf& cfg);
-	void DataConfChange(const DataCenterConf& cfg);
+    void LanguageChanged(int lang);
+    void RecordShowChanged(int recordtype);
+    void RecordConfigChanged();
+    void CoreConfChange(const CoreConf& cfg);
+    void DataConfChange(const DataCenterConf& cfg);
 
 private:
     class Impl;

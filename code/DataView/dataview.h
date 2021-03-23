@@ -2,7 +2,7 @@
 * @filename  : dataview.h
 *
 * @brief     : 此文件用于将数据显示到界面上
-*	
+*    
 * @author    : Guo.Mingbing
 * @date      : 2019/11/25
 * 
@@ -33,18 +33,18 @@ public slots:
     void Init(QString title = "");
     void show();
 
-	void OnLanguageChange(int lang);
-	void OnChangeUI(EUISelection sel);
-	void OnRecordShowChanged(int show);
+    void OnLanguageChange(int lang);
+    void OnChangeUI(EUISelection sel);
+    void OnRecordShowChanged(int show);
 signals:
-	/****************  Config **********************************************************/
-	void signal_GetAllConfig(AllConfig& cfg);
-	void signal_SetAllConfig(const AllConfig& cfg);
-	void signal_GetWordsTranslation(QMap<int, QString>& , QMap<int, QString>&);
-	int signal_GetTimeInterval();
+    /****************  Config **********************************************************/
+    void signal_GetAllConfig(AllConfig& cfg);
+    void signal_SetAllConfig(const AllConfig& cfg);
+    void signal_GetWordsTranslation(QMap<QString, QString>& , QMap<QString, QString>&);
+    int signal_GetTimeInterval();
 
 
-	/****************  DataCenter ******************************************************/
+    /****************  DataCenter ******************************************************/
     /**
     * @brief  :  signal_GetDataByTime 获取最新一条记录
     *
@@ -83,10 +83,10 @@ signals:
     * @return :  bool 可能由于异常原因导致出错(如数据库文件无法打开等)
     * @retval :
     */
-	bool signal_GetRecordByTime(int type, QDateTime st, QDateTime end, Record& data);
+    bool signal_GetRecordByTime(int type, QDateTime st, QDateTime end, Record& data);
 
 
-	/****************  Self Defined ******************************************************/
+    /****************  Self Defined ******************************************************/
     void closed();
 
 private:
@@ -94,9 +94,9 @@ private:
     
     Impl* pimpl;
 
-	friend class MainUI;
-	friend class QueryWidget;
-	friend class SettingWidget;
+    friend class MainUI;
+    friend class QueryWidget;
+    friend class SettingWidget;
 
 };
 

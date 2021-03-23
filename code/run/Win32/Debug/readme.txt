@@ -19,6 +19,7 @@ data_outdate_days=30
 language=0
 show_record_type=0
 code_file_prefix=CodeTs
+protocol_version=0
 
 [timeInterval]
 time_interval=5
@@ -47,6 +48,8 @@ log_level=2
 4. system.show_record_type:主界面显示的记录类型 0:按时间间隔的统计记录 1:按班次的统计记录
 5. system.language:0中文,1英文
 6. system.code_file_prefix:使用的代码(包含模板代码和缺陷码)的词条对应文件名前缀
+7. system.protocol_version:webservice协议版本,0:Vexi(v1.x),1:Tera(v2.4)注:v2.4当前不支持组合设备(如MCAL+COMBI)这种方式的数据,支持单设备单模号的.
+
 文件放在运行目录下的文件下,如示例配置,完整文件名为CodeTs_en.ini,如下所示,其中MoldWords下的是模板代码对应的词条,SensorWords下对应的是缺陷码对应的词条.
 示例文件(英文文件内容如下):
 ```

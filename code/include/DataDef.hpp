@@ -8,60 +8,61 @@
 #include <QMap>
 #include <QTime>
 #include <QStringList>
+#include <QSharedPointer>
 
 class SensorInfo
 {
 public:
-	int sensorrowid;
-    int id;             //缺陷代码
+    int sensorrowid;
+    QString id;             //缺陷代码
     int rejects;        //系统发出的剔废信号数
     int defects;        //系统收到的实际剔废数
 
-	QMap<int, int> addinginfo;	//缺陷附加信息 count_id特征值索引 映射 Nb计数
+    QMap<QString, int> addinginfo;    //缺陷附加信息 count_id特征值索引 映射 Nb计数
 
     SensorInfo()
     {
-        id = -1;
+        id = "-1";
         rejects = 0;
         defects = 0;
     }
 
     void MergeData(const SensorInfo& t)
-	{
-		sensorrowid = t.sensorrowid;
+    {
+        sensorrowid = t.sensorrowid;
         rejects += t.rejects;
         defects += t.defects;
-		foreach(int k, t.addinginfo.keys())
-		{
-			if(addinginfo.contains(k))
-			{
-				addinginfo[k] += t.addinginfo.value(k);
-			}
-			else
-			{
-				addinginfo.insert(k, t.addinginfo.value(k));
-			}
+        foreach(auto k, t.addinginfo.keys())
+        {
+            if(addinginfo.contains(k))
+            {
+                addinginfo[k] += t.addinginfo.value(k);
+            }
+            else
+            {
+                addinginfo.insert(k, t.addinginfo.value(k));
+            }
 
-		}
+        }
     }
 };
 
 class MoldInfo
 {
 public:
-	int moldrowid;
-    int id;             //模号
+    int moldrowid;
+    QString id;             //模号
     int inspected;      //系统过检总数
     int rejects;        //系统发出的剔废信号数
     int defects;        //系统收到的实际剔废数
     int autorejects;    //自动剔废数(以上两个的差值，此值还是传入不是自动计算)
 
     QList<SensorInfo>   sensorinfo;     //缺陷检测信息
-    QMap<int, int>      sensorid_idx;   //缺陷ID对应索引,用于合并
+    QMap<QString, int>      sensorid_idx;   //缺陷ID对应索引,用于合并
 
     MoldInfo()
     {
-        id = -1;
+        id = "-1";
         inspected = 0;
         rejects = 0;
         defects = 0;
@@ -86,13 +87,13 @@ public:
         {
             t.GenerateSensorIdx();
         }
-		moldrowid = t.moldrowid;
+        moldrowid = t.moldrowid;
         inspected += t.inspected;
         rejects += t.rejects;
         defects += t.defects;
         autorejects += t.autorejects;
         //缺陷合并是对应缺陷合并
-        foreach(int id, t.sensorid_idx.keys())
+        foreach(auto id, t.sensorid_idx.keys())
         {
             if(sensorid_idx.contains(id))
             {
@@ -110,21 +111,21 @@ public:
 //用于保存传入的XML字符串包含的数据
 class XmlData{
 public:
-	int mainrowid;
+    int mainrowid;
     QString id;         //MachineID
     int inspected;      //系统过检总数
     int rejects;        //系统发出的剔废信号数
     int defects;        //系统收到的实际剔废数
-	int autorejects;    //自动剔废数(以上两个的差值，此值还是传入不是自动计算)
+    int autorejects;    //自动剔废数(以上两个的差值，此值还是传入不是自动计算)
 
-	QList<MoldInfo>     moldinfo;       //模号数据
-	QMap<int, int>      moldid_idx;     //模号对应索引,用于合并
+    QList<MoldInfo>     moldinfo;       //模号数据
+    QMap<QString, int>      moldid_idx;     //模号对应索引,用于合并
 
     QDateTime dt_start;    //开始时间
     QDateTime dt_end;      //结束时间
 
-	QDate date;			//日期 班次的日期
-	int	shift;			//班次	从0开始
+    QDate date;            //日期 班次的日期
+    int    shift;            //班次    从0开始
 
     XmlData()
     {
@@ -153,15 +154,15 @@ public:
         {
             t.GenerateModIdx();
         }
-		mainrowid = t.mainrowid;
+        mainrowid = t.mainrowid;
         inspected += t.inspected;
         rejects += t.rejects;
         defects += t.defects;
         autorejects += t.autorejects;
-		date = t.date;
-		shift = t.shift;
+        date = t.date;
+        shift = t.shift;
         //模板合并是对应模板合并
-        foreach(int id, t.moldid_idx.keys())
+        foreach(auto id, t.moldid_idx.keys())
         {
             if(moldid_idx.contains(id))
             {
@@ -219,164 +220,164 @@ inline int ETimeInterval2Min(ETimeInterval eti)
 class Shift
 {
 public:
-	Shift(const QStringList& tlst)
-	{
-		reset(tlst);
-	}
+    Shift(const QStringList& tlst)
+    {
+        reset(tlst);
+    }
 
-	void reset(const QStringList& tlst)
-	{
-		shifttime.clear();
-		foreach(QString t, tlst)
-		{
-			shifttime.append(QTime::fromString(t));
-		}
+    void reset(const QStringList& tlst)
+    {
+        shifttime.clear();
+        foreach(QString t, tlst)
+        {
+            shifttime.append(QTime::fromString(t));
+        }
 
-		sorttime = shifttime;
-		qSort(sorttime);
-		if(tlst.size() == 1)
-		{
-			changtime = shifttime.first();
-			afterflag = false;
-		}
-		else
-		{
-			changtime = shifttime.first();
-			if(24 - shifttime.first().hour() >= 12)
-			{
-				afterflag = false;
-			}
-			else	
-			{
-				afterflag = true;
-			}
-		}
-	}
+        sorttime = shifttime;
+        qSort(sorttime);
+        if(tlst.size() == 1)
+        {
+            changtime = shifttime.first();
+            afterflag = false;
+        }
+        else
+        {
+            changtime = shifttime.first();
+            if(24 - shifttime.first().hour() >= 12)
+            {
+                afterflag = false;
+            }
+            else    
+            {
+                afterflag = true;
+            }
+        }
+    }
 
-	QStringList getShiftTimeList()
-	{
-		QStringList tlst;
-		foreach(QTime t, shifttime)
-		{
-			tlst.append(t.toString("hh:mm:ss"));
-		}
-		return tlst;
-	}
+    QStringList getShiftTimeList()
+    {
+        QStringList tlst;
+        foreach(QTime t, shifttime)
+        {
+            tlst.append(t.toString("hh:mm:ss"));
+        }
+        return tlst;
+    }
 
-	QDateTime getNextShiftTime(const QDateTime& _t)
-	{
-		foreach (QTime t, sorttime)
-		{
-			if(_t.time() < t)
-			{
-				return QDateTime(_t.date(), t);
-			}
-		}
-		return QDateTime(_t.date().addDays(1), sorttime.first());
-	};
+    QDateTime getNextShiftTime(const QDateTime& _t)
+    {
+        foreach (QTime t, sorttime)
+        {
+            if(_t.time() < t)
+            {
+                return QDateTime(_t.date(), t);
+            }
+        }
+        return QDateTime(_t.date().addDays(1), sorttime.first());
+    };
 
-	QDateTime getLastShiftTime(const QDateTime& t){
-		for (int i = sorttime.size() - 1; i >= 0; i--)
-		{
-			if(t.time() >= sorttime[i])
-			{
-				return QDateTime(t.date(), sorttime[i]);
-			}
-		}
-		return QDateTime(t.date().addDays(-1), sorttime.last());
-	};
+    QDateTime getLastShiftTime(const QDateTime& t){
+        for (int i = sorttime.size() - 1; i >= 0; i--)
+        {
+            if(t.time() >= sorttime[i])
+            {
+                return QDateTime(t.date(), sorttime[i]);
+            }
+        }
+        return QDateTime(t.date().addDays(-1), sorttime.last());
+    };
 
-	void getShiftDateShift(const QDateTime& t, QDate& d, int& shift)
-	{
-		//如果只会有一个班
-		if(shifttime.size() == 1)
-		{
-			shift = 0;
-			if(t.time() < shifttime.first())
-			{
-				d = t.date().addDays(-1);
-			}
-			else
-			{
-				d = t.date();
-			}
-			return;
-		}
-		if(t.time() <= changtime && !afterflag)
-		{//时间在切换时间之前 且 切换后不+1
-			d = t.date().addDays(-1);
-		}
-		else if(t.time() > changtime && afterflag)
-		{//时间在切换时间之后 且 切换后不+1
-			d = t.date().addDays(1);
-		}
-		else
-		{
-			d = t.date();
-		}
-		QTime st = getLastShiftTime(t).time();
-		QTime et = getNextShiftTime(t).time();
-		shift = -1;
-		for (int i = 0; i < shifttime.size()-1; i++)
-		{
-			if(st == shifttime[i] && et == shifttime[i+1])
-			{
-				shift = i;
-				break;
-			}
-		}
-		if(shift == -1)
-		{
-			shift = shifttime.size()-1;
-		}
-	}
+    void getShiftDateShift(const QDateTime& t, QDate& d, int& shift)
+    {
+        //如果只会有一个班
+        if(shifttime.size() == 1)
+        {
+            shift = 0;
+            if(t.time() < shifttime.first())
+            {
+                d = t.date().addDays(-1);
+            }
+            else
+            {
+                d = t.date();
+            }
+            return;
+        }
+        if(t.time() <= changtime && !afterflag)
+        {//时间在切换时间之前 且 切换后不+1
+            d = t.date().addDays(-1);
+        }
+        else if(t.time() > changtime && afterflag)
+        {//时间在切换时间之后 且 切换后不+1
+            d = t.date().addDays(1);
+        }
+        else
+        {
+            d = t.date();
+        }
+        QTime st = getLastShiftTime(t).time();
+        QTime et = getNextShiftTime(t).time();
+        shift = -1;
+        for (int i = 0; i < shifttime.size()-1; i++)
+        {
+            if(st == shifttime[i] && et == shifttime[i+1])
+            {
+                shift = i;
+                break;
+            }
+        }
+        if(shift == -1)
+        {
+            shift = shifttime.size()-1;
+        }
+    }
 
-	bool operator!=(const QList<QString>& l)const
-	{
-		if(shifttime.size() != l.size())
-		{
-			return true;
-		}
-		for(int i = 0; i < l.size(); i++)
-		{
-			if(shifttime[i] != QTime::fromString(l[i]))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
+    bool operator!=(const QList<QString>& l)const
+    {
+        if(shifttime.size() != l.size())
+        {
+            return true;
+        }
+        for(int i = 0; i < l.size(); i++)
+        {
+            if(shifttime[i] != QTime::fromString(l[i]))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	bool operator!=(const Shift& l)const
-	{
-		return shifttime != l.shifttime;
-	}
+    bool operator!=(const Shift& l)const
+    {
+        return shifttime != l.shifttime;
+    }
 public:
-	QList<QTime> shifttime;	//班次切换时间点
+    QList<QTime> shifttime;    //班次切换时间点
 private:
-	QList<QTime> sorttime;	//排序时间
-	
-	QTime changtime;		//一天的切换时间点
-	bool afterflag;			//切换时间点之后是否+1 如果不加则之前会-1
+    QList<QTime> sorttime;    //排序时间
+    
+    QTime changtime;        //一天的切换时间点
+    bool afterflag;            //切换时间点之后是否+1 如果不加则之前会-1
 };
 
 enum ERecordType
 {
-	ERT_TimeInterval,
-	ERT_Shift,
+    ERT_TimeInterval,
+    ERT_Shift,
 };
 
 enum ELanguage
 {
-	EL_Chinese  = 0,         //中文
-	EL_English  = 1,         //英文
+    EL_Chinese  = 0,         //中文
+    EL_English  = 1,         //英文
 };
 
 enum EUISelection
 {
-	EUI_Main,
-	EUI_QueryData,
-	EUI_Settings,
+    EUI_Main,
+    EUI_QueryData,
+    EUI_Settings,
 };
 
 

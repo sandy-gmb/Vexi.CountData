@@ -63,12 +63,12 @@ protected:
 	bool QueryRecordByTime(EOperDatabase type, QDateTime st, QDateTime et,QList<Record>& lst, QString* err);
 	bool QueryMoldInfoByMainID(QSharedPointer<QSqlDatabase> db, const QSet<int>& mainrowidlst,QMap<int, QList<MoldInfo> >& moldinfo, QSet<int>& moldrowidlst, QString* err);
 	bool QuerySensorInfoByMoldID(QSharedPointer<QSqlDatabase> db,  const QSet<int>& moldrowidlst,QMap<int, QList<SensorInfo> >&  sensorinfo, QSet<int>& sensorrowidlst, QString* err);
-	bool QuerySensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> db,  const QSet<int>& sensorrowidlst, QMap<int, QMap<int, int> >& addinginfo, QString* err);
+	bool QuerySensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> db,  const QSet<int>& sensorrowidlst, QMap<int, QMap<QString, int> >& addinginfo, QString* err);
 
 	bool SaveRecord(EOperDatabase type, const Record& lst, QString* err, bool isoutdb = false);
 	bool SaveMoldInfoByMainID(QSharedPointer<QSqlDatabase> db, int mainrowid, const QList<MoldInfo>& moldinfo, QString* err);
 	bool SaveSensorInfoByMoldID(QSharedPointer<QSqlDatabase> db, int moldrowid, const QList<SensorInfo>& sensorinfo, QString* err);
-	bool SaveSensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> db, int sensorrowid, const QMap<int, int>& addinginfo, QString* err);
+	bool SaveSensorAddingInfoBySensorID(QSharedPointer<QSqlDatabase> db, int sensorrowid, const QMap<QString, int>& addinginfo, QString* err);
 	
 	bool SaveShiftRecord(QSharedPointer<QSqlDatabase> _db, const Record& re, QString* err, bool isoutdb = false);
 	/********************* process Generate Record ******************************************************************************************************/

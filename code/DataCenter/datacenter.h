@@ -8,48 +8,7 @@
 * 
 * @version   : V0.1
 
-//以下为示例XML字符串，无换行的原字符串
-//<Root xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="">
-//    <Machine Id="MX">
-//    <!-- 过检总数 -->
-//    <Inspected>1</Inspected>
-//    <!-- 发剔废信号数 -->
-//    <Rejects>1</Rejects>
-//    <!-- 实际剔废数 -->
-//    <Defects>1</Defects>
-//    <!-- 信号差值数 -->
-//    <Autoreject>0</Autoreject>
-//    <!-- 模号 0-99 可能有多个 -->
-//    <Mold id="0">
-//    <!-- 过检总数 | 发剔废信号数 | 实际剔废数 | 信号差值数 -->
-//    <Inspected>1</Inspected>
-//    <Rejects>1</Rejects>
-//    <Defects>1</Defects>
-//    <Autoreject>0</Autoreject>
-//
-//    <!-- 缺陷代码 | 检测个数 | 实际剔废个数 | 其他变量-->
-//    <Sensor id="40">
-//    <Rejects>0</Rejects>
-//    <Defects>0</Defects>
-//    </Sensor>
-//    <Sensor id="41">
-//    <Rejects>1</Rejects>
-//    <Defects>1</Defects>
-//    <Counter id="1" Nb="1" />
-//    </Sensor>
-//    <Sensor id="42">
-//    <Rejects>0</Rejects>
-//    <Defects>0</Defects>
-//    </Sensor>
-//    <Sensor id="46">
-//    <Rejects>1</Rejects>
-//    <Defects>1</Defects>
-//    <Counter id="1" Nb="1" />
-//    <Counter id="2" Nb="1" />
-//    </Sensor>
-//    </Mold>
-//    </Machine>
-//    </Root>
+
 *********************************************************************/
 #ifndef DATACANTER_20GCLXZDB2VN57N8_H_
 #define DATACANTER_20GCLXZDB2VN57N8_H_
@@ -79,6 +38,7 @@ public:
 
 signals:
     void GetDataCenterConf(DataCenterConf& cfg);
+    void GetSystemConf(SystemConfig& cfg);
     void SetGenerateRecordTimeInterval(int ti);
 
 public slots:
